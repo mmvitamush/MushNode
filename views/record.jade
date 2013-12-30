@@ -1,0 +1,131 @@
+extends layout
+append css
+  link(rel='stylesheet',href='/stylesheets/jquery-ui-1.10.3.custom.min.css')
+  link(rel='stylesheet',href='/stylesheets/jquery-ui-timepicker-addon.min.css')
+  link(rel='stylesheet',href='/font/﻿typicons.min.css')
+  link(rel='stylesheet',href='/stylesheets/﻿dashboard.css')
+append script
+  script(src='/javascripts/jquery-ui-timepicker-addon.min.js')
+  script(src='/javascripts/﻿jquery-ui-sliderAccess.js')
+  script(src='/javascripts/﻿jquery-ui-tiamepicker-ja.js')
+  script(src='/javascripts/﻿jquery.flot.js')
+  script(src='/javascripts/﻿jquery.flot.selection.min.js')
+  script(src='/javascripts/﻿jquery.flot.time.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='/javascripts/﻿record.js')
+block content
+    .row
+        .col-lg-12
+            nav.navbar.navbar-default.navbar-fixed-top(role='navigation')
+                .navbar-header.rl
+                    a.navbar-brand.vflogo.simple-menu(href='#sidr') VF
+                .collapse.navbar-collapse
+                    p.navbar-text(style='font-size:19px')
+                        i.glyphicon.glyphicon-book
+                        | &nbspレコード
+                    .infodiv
+                        p#info_p.navbar-text.c_p
+                          span.glyphicon.glyphicon-info-sign
+                          | &nbsp受信待機中・・・
+                        .progress.progress-striped.active.c_progress
+                            #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
+
+    #sidr
+     ul
+       li: a.simple-menu(href='#')
+           span.glyphicon.glyphicon-remove.sidr-span.icon-off-white
+           | CLOSE
+       li: a(href='#')
+           span.glyphicon.glyphicon-calendar.icon-orange6.sidr-span
+           | スケジュール
+       li: a(href='/record')
+           span.glyphicon.glyphicon-book.icon-orange7.sidr-span
+           | レコード
+       li: a(href='#')
+           span.glyphicon.glyphicon-user.icon-orange1.sidr-span
+           | 作業管理
+       li: a(href='#')
+           span.glyphicon.glyphicon-download-alt.icon-orange2.sidr-span
+           | データ配信
+       li: a(href='#')
+           span.glyphicon.glyphicon-phone.icon-orange3.sidr-span
+           | 端末管理　
+       li: a(href='#')
+           span.glyphicon.glyphicon-cog.icon-orange4.sidr-span
+           | 設定
+
+    #maincontainer-record
+                    ul.nav.nav-tabs#myTab
+                        li: a(href='#graphTab',data-toggle='tab') グラフ
+                        li: a(href='#recordTab',data-toggle='tab') 履歴
+                    .tab-content
+                        .tab-pane.active#graphTab
+                            #modal-container
+                                .row.modalMenuRow
+                                    .col-lg-6
+                                        
+                                        ul.pagination.pagination-lg
+                                            li.disabled: a(href='#') LineNo
+                                            - for (var  cnt = 1; cnt < 13; cnt++) 
+                                                if cnt ==1
+                                                    li.active: a(href='#') #{cnt}
+                                                else
+                                                    li: a(href='#') #{cnt}
+
+                                            
+                                    .input-group.col-lg-2.mgn10
+                                        span.input-group-addon: i.glyphicon.glyphicon-fast-forward
+                                        input#datetimepicker1.form-control(type='text',placeholder='開始日時',name='eventStart')
+
+                                    .input-group.col-lg-2.mgn10
+                                        span.input-group-addon: i.glyphicon.glyphicon-fast-backward
+                                        input#datetimepicker2.form-control(type='text',placeholder='終了日時',name='eventEnd')
+                                        
+
+                                    .btn-group.col-lg-2.btn-group-custom(data-toggle='buttons')
+                                        label.btn.btn-primary.active
+                                            input#option1(type='radio',name='options')
+                                            | 日
+                                        label.btn.btn-primary
+                                            input#option2(type='radio',name='options')
+                                            | 週
+                                        label.btn.btn-primary
+                                            input#option3(type='radio',name='options')
+                                            | 月
+                                            
+                                    #toggleBtns.btn-group.col-lg-4.btn-group-custom(data-toggle='buttons')
+                                        label.btn.btn-primary.active
+                                            input#option-ch1(type='radio',name='options-ch')
+                                            i.glyphicon.glyphicon-fire
+                                            | &nbsp温度
+                                        label.btn.btn-primary
+                                            input#option-ch2(type='radio',name='options-ch')
+                                            i.glyphicon.glyphicon-tint
+                                            | &nbsp湿度
+                                        label.btn.btn-primary
+                                            input#option-ch3(type='radio',name='options-ch')
+                                            i.glyphicon.glyphicon-adjust
+                                            | &nbsp温度＆湿度
+                                    .input-group.col-lg-2.mgn10
+                                        button#chartrefreshBtn.btn.btn-primary.btn-block(type='button')
+                                            i.glyphicon.glyphicon-refresh
+                                            | &nbsp更新
+                                                                      
+                                .row
+                                    .col-lg-9
+                                        .chart_wrap: #RecordChartMain.c_t
+                                    .col-lg-3
+                                        .chart_wrap
+                                            ul.list-group
+                                                li.list-group-item Cras justo odio
+                                                li.list-group-item Cras justo odio
+                                                li.list-group-item Cras justo odio
+                                                li.list-group-item Cras justo odio
+                                                li.list-group-item Cras justo odio
+                                                li.list-group-item Cras justo odio
+                                    .col-lg-12
+                                        ul.pager
+                                            li: a(href='#') 前
+                                            li: a(href='#') 次
+                        .tab-pane#recordTab
+            

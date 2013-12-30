@@ -1,0 +1,29 @@
+body {
+	background-color:#FEFEFE;
+}
+.chart_wrap {
+	height:400px;
+	padding:0;
+	position:relative;
+}
+
+#chart_cels,#selectchart {
+	min-height:100%;
+}
+
+.legendLabel {
+	color:#FFFFFF;
+}
+
+#realtime {
+	padding:10px;
+}
+
+#select_d {
+	padding:10px;
+}
+
+.input_form {
+	background-color:#ececec;
+	box-shadow: 0 0 1px rgba(0, 0, 0, 0.3), 0 3px 7px rgba(0, 0, 0, 0.3), 0 1px #FFFFFF inset, 0 -3px 2px rgba(0, 0, 0, 0.25) inset;
+}
