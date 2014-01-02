@@ -15,3 +15,17 @@ mushrecord.readRecord = function(line,lineno,start,end,callback){
             callback(err,results);
     });
 };
+
+mushrecord.readRecordAll = function(line,lineno,start,end,callback){
+    var params = [line,lineno,start,end];
+    var sql = 'select * from mushrecord;';
+    db.query(sql,params,function(err,results){
+            db.end();
+            if(err){
+                    console.log(err);
+                    callback(new Error('select failed.'));
+                    return;
+            } 
+            callback(err,results);
+    });
+};

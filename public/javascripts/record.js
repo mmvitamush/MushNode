@@ -36,7 +36,7 @@ $(function(){
     
     $('#chartrefreshBtn').click(function(){
         var wk_d = {line:1,lineno:1,start:'2013-12-27 00:00:00',end:'2013-12-27 23:59:59'};
-        ajaxLoading('http://localhost:3000/api/getRecordData','post','json',wk_d,0);
+        ajaxLoading('http://www.vita-factory.com/api/getRecordData','post','json',wk_d,0);
     });
     
 //非同期通信でサーバからデータを受信する
