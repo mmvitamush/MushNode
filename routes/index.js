@@ -3,17 +3,89 @@
  * GET home page.
  */
 var db_mushrecord = require('../models/mushrecord');
+var users = require('../models/users');
 
 exports.index = function(req, res){
+//    var name = '??';
+//    var password = '???????4';
+//    users.createUser(name,password,function(err,sid){
+//        if(err){
+//            console.log('user creation failed.')
+//        }
+//        console.log('user ' + name + ' created. sid:  ' + sid);
+//    });
   res.render('index', { title: 'Express' });
 };
 
+//ログイン処理を行う
+exports.login = function(req,res){
+   res.render('login',{
+       page:{title:'login'},
+       user:null,
+       name:'',
+       error:200,
+       loginFailed:false
+   });
+   return;
+};
+
+//ログインフォームを処理する
+exports.login.post = function(req,res){
+   var name = req.body.name || '';
+   var password = req.body.password || '';
+   
+   function authCallback(err,userInfo){
+       if(err || userInfo === null){
+           //認証失敗
+           res.render('login',{
+               page:{title:'login'},
+               user:null,
+               name:name,
+               error:200,
+               loginFailed:true
+           });
+           return;
+       }
+       //認証成功
+       req.session.user = {
+          uid:userInfo.id,
+          name:userInfo.username
+       };
+       res.redirect('/record');
+       return;
+   };
+   users.authenticate(name,password,authCallback);
+};
+
+//ログアウト
+exports.logout = function(req,res){
+   req.session.destroy(function(err){
+       res.redirect('/login');
+   }); 
+};
+
 exports.dashboard = function(req,res){
-    res.render('dashboard',{title:'Dashboard'});
+   if(req.session.user === undefined) {
+       res.redirect(403,'/login');
+       return;
+   }
+    res.render('dashboard',{
+        page:{title:'Dashboard'},
+        user:req.session.user,
+        error:200
+    });
 };
 
 exports.record = function(req,res){
-   res.render('record',{title:'Record'}); 
+   if(req.session.user === undefined) {
+       res.redirect(403,'/login');
+       return;
+   }
+   res.render('record',{
+       page:{title:'Record'},
+       user:req.session.user,
+       error:200
+   }); 
 };
 
 exports.getRecordData = function(req,res){
@@ -21,7 +93,7 @@ exports.getRecordData = function(req,res){
         var lineno = req.body.lineno;
         var start = new Date(req.body.start);
         var end = new Date(req.body.end);
-        db_mushrecord.readRecord(line,lineno,start,end,function(err,results){
+        db_mushrecord.readRecordAll(line,lineno,start,end,function(err,results){
             if(err){
                 console.log(err);
                 res.send(500);

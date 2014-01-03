@@ -2,57 +2,19 @@ extends layout
 append css
   link(rel='stylesheet',href='/stylesheets/jquery-ui-1.10.3.custom.min.css')
   link(rel='stylesheet',href='/stylesheets/jquery-ui-timepicker-addon.min.css')
-  link(rel='stylesheet',href='/font/﻿typicons.min.css')
-  link(rel='stylesheet',href='/stylesheets/﻿dashboard.css')
+  link(rel='stylesheet',href='/font/typicons.min.css')
+  link(rel='stylesheet',href='/stylesheets/dashboard.css')
 append script
   script(src='/javascripts/jquery-ui-timepicker-addon.min.js')
-  script(src='/javascripts/﻿jquery-ui-sliderAccess.js')
-  script(src='/javascripts/﻿jquery-ui-tiamepicker-ja.js')
-  script(src='/javascripts/﻿jquery.flot.js')
-  script(src='/javascripts/﻿jquery.flot.selection.min.js')
-  script(src='/javascripts/﻿jquery.flot.time.min.js')
+  script(src='/javascripts/jquery-ui-sliderAccess.js')
+  script(src='/javascripts/jquery-ui-tiamepicker-ja.js')
+  script(src='/javascripts/jquery.flot.js')
+  script(src='/javascripts/jquery.flot.selection.min.js')
+  script(src='/javascripts/jquery.flot.time.min.js')
   script(src='/socket.io/socket.io.js')
-  script(src='/javascripts/﻿dashboard.js')
+  script(src='/javascripts/dashboard.js')
 block content
-    .row
-        .col-lg-12
-            nav.navbar.navbar-default.navbar-fixed-top(role='navigation')
-                .navbar-header.rl
-                    a.navbar-brand.vflogo.simple-menu(href='#sidr') VF
-                .collapse.navbar-collapse
-                    p.navbar-text(style='font-size:19px') LINE1 サマリー
-                    .infodiv
-                        p#info_p.navbar-text.c_p
-                          span.glyphicon.glyphicon-info-sign
-                          | &nbsp受信待機中・・・
-                        .progress.progress-striped.active.c_progress
-                            #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
-
-    #sidr
-     ul
-       li: a.simple-menu(href='#')
-           span.glyphicon.glyphicon-remove.sidr-span.icon-off-white
-           | CLOSE
-       li: a(href='#')
-           span.glyphicon.glyphicon-calendar.icon-orange6.sidr-span
-           | スケジュール
-       li: a(href='/record')
-           span.glyphicon.glyphicon-book.icon-orange7.sidr-span
-           | レコード
-       li: a(href='#')
-           span.glyphicon.glyphicon-user.icon-orange1.sidr-span
-           | 作業管理
-       li: a(href='#')
-           span.glyphicon.glyphicon-download-alt.icon-orange2.sidr-span
-           | データ配信
-       li: a(href='#')
-           span.glyphicon.glyphicon-phone.icon-orange3.sidr-span
-           | 端末管理　
-       li: a(href='#')
-           span.glyphicon.glyphicon-cog.icon-orange4.sidr-span
-           | 設定
-
-    #maincontainer
+ #maincontainer
         .row
             .col-md-6.row_m
                 .panel.panel-default
@@ -63,9 +25,11 @@ block content
                     table.table
                         thead
                             tr
-                            t_list = ['現在値','設定値','上限','下限']
-                                for item in t_list
-                                    th= item
+                                th 現在値
+                                th 設定値
+                                th 上限
+                                th 下限
+                            
                         tbody
                             tr.line1tr1
                                 td#cels_td 0
@@ -98,8 +62,10 @@ block content
                     table.table
                         thead
                             tr
-                                for item in t_list
-                                    th= item
+                                th 現在値
+                                th 設定値
+                                th 上限
+                                th 下限
                         tbody
                             tr.line1tr1
                                 td#humd_td 0
@@ -133,9 +99,12 @@ block content
                     .panel-body.panel-body.record
                         table#mcn-table.table.table-hover
                             tr.success
-                                list = ['制御機器','現在の状態','設定値','アクセス状況','切替']
-                                for item in list
-                                    th= item
+                                th 制御機器
+                                th 現在の状態
+                                th 設定値
+                                th アクセス状況
+                                th 切替
+                                
                             tr
                                 td: span.typcn.typcn-adjust-brightness.text-add 温度UP
                                 td
@@ -216,9 +185,12 @@ block content
                     .panel-body.panel-body-record
                         table#record-table.table.table-striped
                             tr
-                                wk = ['Line','LineNo','日時','温度','湿度']
-                                for x in wk
-                                    th= x
+                                th Line
+                                th LineNo
+                                th 日時
+                                th 温度
+                                th 湿度
+                                
                         #loadingTable1.loadingWrap-table: img(src='../images/gif-load.gif')
                     .panel-footer
                         .row
@@ -255,7 +227,7 @@ block content
             .modal-content
                 .modal-header
                     button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
-                    h4#myModal#myModalLabel.modal-title: span.glyphicon.glyphicon-eye-open &nbsp詳細データ一覧表示
+                    h4#myModalLabel.modal-title: span.glyphicon.glyphicon-eye-open &nbsp詳細データ一覧表示
                 .modal-body
                     ul.nav.nav-tabs#myTab
                         li: a(href='#graphTab',data-toggle='tab') グラフ
@@ -333,4 +305,3 @@ block content
             
                 .modal-footer
                     button.btn.btn-primary(type='button',data-dismiss='modal') 閉じる
-                    

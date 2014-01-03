@@ -9,7 +9,7 @@ var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 var config = require('./config');
-var MemcachedStore = require('connect-memcached')(express);
+var MongoStore = require('connect-mongo')(express);
 
 var app = express();
 var server = http.createServer(app);
@@ -21,10 +21,20 @@ skt.set('destroy upgrade',false);
 app.set('port', process.env.PORT || 8000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.use(express.cookieParser(config.cookieHash));
+//app.use(express.cookieParser(config.cookieHash));
+app.use(express.cookieParser());
 app.use(express.session({
-    key:'session',
-    store:new MemcachedStore()
+//    key:'session',
+    secret:'secret',
+    store:new MongoStore({
+        db:'mushroom',
+        host:'127.0.0.1',
+        clear_interval:60 * 60
+    }),
+    cookie:{
+        httpOnly:false,
+        maxAge:new Date(Date.now() + 60 * 60 * 1000)
+    }
 }));
 app.use(express.favicon(path.join(__dirname, 'public/images/favicon.ico')));
 app.use(express.logger('dev'));
