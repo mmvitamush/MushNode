@@ -112,3 +112,8 @@ exports.getChart = function(req,res){
 exports.getLog = function(req,res){
     
 };
+
+
+exports.wsgate = function(req,res){
+    
+};
