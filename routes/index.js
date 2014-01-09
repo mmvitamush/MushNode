@@ -76,11 +76,28 @@ exports.dashboard = function(req,res){
     });
 };
 
+exports.line = function(req,res){
+    var lineId = Number(req.params.lineId);
+   if(isNaN(lineId)){
+       res.send(404);
+       return;
+   }
+   var lineParams = {
+      lineId:lineId 
+   };
+   res.render('index',{
+       page:{title:'LINE'+lineId+':'+'Record'},
+       lineParams:lineParams,
+       error:200
+   }); 
+};
+
 exports.record = function(req,res){
    if(req.session.user === undefined) {
        res.redirect(403,'/login');
        return;
    }
+   
    res.render('record',{
        page:{title:'Record'},
        user:req.session.user,

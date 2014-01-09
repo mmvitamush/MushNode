@@ -9,14 +9,77 @@ var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 var config = require('./config');
-var MongoStore = require('connect-mongo')(express);
+var SessionStore = require('connect-redis')(express);
 var realtimesockets = require('./sockets/realtime');
 
 var app = express();
 
 var server = http.createServer(app);
-var io = require('socket.io').listen(server,{log:false});
-realtimesockets.io = io;
+
+var redisport = config.redisPort,
+      redishost = config.redisHost;
+var RedisStore = require('socket.io/lib/stores/redis'),
+      redis = require('redis'),
+      pub = redis.createClient(redisport,redishost),
+      sub = redis.createClient(redisport,redishost),
+      redisclient = redis.createClient(redisport,redishost);
+      
+// Socket.IO
+var io = require('socket.io').listen(server,{
+    'store':new RedisStore({
+        redisPub:pub,
+        redisSub:sub,
+        redisClient:redisclient
+    }),
+    'log level':1,
+    'authorization':function(handshake,callback){
+        //グローバル認証
+        //var id = handshake.query.id;
+        //if(!io.namespaces.hasOwnProperty('/line/'+id)){
+            //var room = io.of('/line/'+id);
+            //room.on('connection',realtimesockets.onConnection);
+        //}
+        callback(null,true);
+    }
+});
+
+realtimesockets.init(io);
+
+/*
+io.configure(function(){
+    io.set('store',new RedisStore({
+        redisPub:pub,
+        redisSub:sub,
+        redisClient:redisclient
+    }));
+});
+*/
+
+//動的に名前空間を追加する
+/*
+io.configure(function(){
+    io.set('authorization',function(handshake,callback){
+        
+        var id = handshake.query.id;
+        if(!io.namespaces.hasOwnProperty('/line/'+id)){
+            var room = io.of('/line/'+id);
+            room.on('connection',realtimesockets.onConnection);
+        }
+        callback(null,true);
+    });
+});
+*/
+
+//realtimesockets.io = io;
+
+/*
+var redis = require('redis');
+var subscriber = redis.createClient(config.redisPort,config.redisHost);
+subscriber.subscribe('hoge channel');
+subscriber.on('message',function(channel,message){
+    console.log(channel + ' : ' + message);
+});
+*/
 
 //skt.set('destroy upgrade',false);
 
@@ -29,10 +92,10 @@ app.use(express.cookieParser());
 app.use(express.session({
 //    key:'session',
     secret:'secret',
-    store:new MongoStore({
-        db:'mushroom',
-        host:'127.0.0.1',
-        clear_interval:60 * 60
+    store:new SessionStore({
+        host:redishost,
+        port:redisport,
+        client:redis.createClient()
     }),
     cookie:{
         httpOnly:false,
@@ -60,7 +123,8 @@ app.post('/login',routes.login.post);
 app.get('/logout',routes.logout);
 
 app.get('/dashboard',routes.dashboard);
-app.get('/record',routes.record);
+app.get('/record/:lineId',routes.record);
+app.get('/line/:lineId',routes.line);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
 app.post(﻿'/api/getlog',routes.getLog);
@@ -73,7 +137,9 @@ server.listen(app.get('port'),function(){
 
 //socket.ioのコネクション設定
 //イベントハンドラーには引数としてクライアントとの通信を行うためのsocketオブジェクトが与えられる
-io.sockets.on('connection',realtimesockets.onConnection);
+//io.sockets.on('connection',realtimesockets.onConnection);
+
+
 
 //http.createServer(app).listen(app.get('port'), function(){
 //  console.log('Express server listening on port ' + app.get('port'));
