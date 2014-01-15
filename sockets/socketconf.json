@@ -1,0 +1,4 @@
+{
+    "redisPort":6379,
+    "redisHost":"ec2-54-238-187-154.ap-northeast-1.compute.amazonaws.com"
+}

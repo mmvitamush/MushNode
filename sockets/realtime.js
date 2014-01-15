@@ -7,6 +7,7 @@ var socketsOf = {};
 var config = require('./socketconf');
 var radisclient = require('redis').createClient(config.redisPort,config.redisHost),
       async = require('async');
+var frontLine;
       
 
 exports.init = function(io){
@@ -18,7 +19,7 @@ exports.init = function(io){
     });
     
     // '/line' namespaceを定義
-    var frontLine = io.of('/line').authorization(function(handshakeData,callback){
+    frontLine = io.of('/line').authorization(function(handshakeData,callback){
             //namespace毎の認証
             
             //handshakeData.foo = 'qwertasdfg';
@@ -28,12 +29,13 @@ exports.init = function(io){
             //  /line/lineidという細分化をする
             socket.join(socket.handshake.query.lineid);
             socket.on('clientConnect',function(data){
-                frontLine.in('1').emit('roomto','1only message');
+                
             });
          });
 };
 
 //引数としてクライアントとの通信を行うためのsocketオブジェクトが与えられる
+/*
 exports.onConnection = function(socket){
     io = exports.io;
     console.log('+*+*+*+*+ io +*+*+*+*+*');
@@ -43,17 +45,12 @@ exports.onConnection = function(socket){
     socket.on('clientConnect',function(msg){
         //クライアントが接続完了した時に送られてくる. socketには現在サーバーに接続されてる、全socket情報が入っている
         console.log('**************************ClientConnect at Server*********************************');
- //       console.log(socket);
 //        console.log('---------------------------------------------------------------------');
         //roomに所属しているidが保存されている
         //console.log(socket.manager.rooms['/line/2']);
 //        console.log('---------------------------------------------------------------------');
  //       console.log(socket.manager.roomClients[socket.id]);
  //       console.log('---------------------------------------------------------------------');
- //onsole.log(socket.namespace.name);
- //       console.log('socket join :'+socket.namespace.name);
- //       console.log('***********************************************************');
-       //socketsOf[socket.namespace.name] = socket;
     });
     
     
@@ -62,34 +59,13 @@ exports.onConnection = function(socket){
         console.log('id:'+socket.sessionid+' Disconnect.');
     });
 };
+*/
 
 exports.pushPoints = function(req,res){
     console.log(req.body);
-    console.log('-------------------------------------------------------------------');
-    
-    //var allskt = socketsOf;
-    //var roomsockets = socketsOf['/line/'+req.body.lineid];
-    //console.log(roomsockets.manager.rooms['/line/'+req.body.lineid]);
-    //console.log('-------------------------------------------------------------------');
-    //console.log(roomsockets);
-    //console.log('-------------------------------------------------------------------');
-    //console.log(socketsOf);
+    frontLine.in(req.body.lineid).emit('roomto',req.body);
     //roomsockets.broadcast.emit('roomsend',req.body);
-    io.of('/line/'+req.body.lineid).emit('roomsend',req.body);
-    //var io = exports.io;
-    //var members = Object.keys(allsockets['sc.js']);
-    //io.sockets.emit('res',req.body);
-    //var skt = allsockets['sc.js'];
-    //skt.emit('res',req.body);
-    //console.log(skt);
-    //Object.keys(skt).forEach(function(key){
-   //    console.log('key -> '+key);
-   //     console.log(skt[key]);
-   // });
-   //roomsockets.emit('roomsend','roomsocket:send');
-   //allskt.emit('roomsend','allsockets:send');
-   
-    console.log('realtimesockets : pushPoints');
+    //io.of('/line/'+req.body.lineid).emit('roomsend',req.body);
     res.send(200);
     return;
 };
