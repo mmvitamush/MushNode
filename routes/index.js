@@ -4,6 +4,7 @@
  */
 var db_mushrecord = require('../models/mushrecord');
 var users = require('../models/users');
+var redislibs = require('../models/redislibs');
 
 exports.index = function(req, res){
 //    var name = '??';
@@ -133,6 +134,18 @@ exports.getRecordData = function(req,res){
 };
 
 exports.getChart = function(req,res){
+    var key = 'linepub:'+req.body.lineid;
+    redislibs.gethash(key,function(err,replies){
+        if(err){
+            console.log(err);
+            res.send(500);
+            return;
+        }
+        console.log(replies);
+        res.json(200,replies);
+        return;
+    });
+        
     
 };
 

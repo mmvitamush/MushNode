@@ -4,8 +4,6 @@ $(document).ready(function() {
     var url = document.URL;
     lineId = url.split('/')[4];
  
-     //graphData = [[["01:00",34],["01:10",78],["01:20",90],["01:30",12],["01:40",45],["01:50",67],["02:00",89],["02:10",23],["02:20",56]],
-     //   [["01:00",34],["01:10",78],["01:20",90],["01:30",12],["01:40",45],["01:50",67],["02:00",89],["02:10",23],["02:20",56]]];
     celsData = [["00:00",0]];
     humdData = [["00:00",0]];
     graphData = [celsData,humdData]; 
@@ -69,7 +67,8 @@ $(function(){
     //サーバーからのセンサー値配信を受信したのでグラフに描画
     socket1.on('roomto',function(params){
             console.log(params);
-            var nowt = computeDuration(parseInt((new Date)/1000));
+            //var nowt = computeDuration(parseInt((new Date)/1000));
+            var nowt = computeDuration(parseInt(params.t_date));
             celsData.push([nowt,(1*params.celsius)]);
             humdData.push([nowt,(1*params.humidity)]);
             graphData = [celsData,humdData];
@@ -80,7 +79,40 @@ $(function(){
             plot = $.jqplot('lineChart', graphData, options);
     });
     
+    $('#btn1').click(function(){
+        var wk_d = {lineid:lineId};
+        ajaxLoading('http://www.vita-factory.com/api/getchart','post','json',wk_d);
+    });
+    
+    $('#btn2').click(function(){
+        console.log('btn2Click.');
+    });
+    
 });
+
+//非同期通信でサーバからデータを受信する
+function ajaxLoading(url,type,dataType,data){
+        $.ajax({
+             url: url,
+             type: type,
+             dataType:dataType,
+             data:data,                 
+             timeout: 20000,
+               //送信前
+             beforeSend:function(xhr,settings) {},
+               //応答後
+             complete: function(xhr,textStatus) {},
+               //通信成功時の処理
+             success:function(result,textStatus,xhr) {
+                        console.log('ajax Success!'); 
+                        console.log(result);
+               },
+               //失敗時の処理
+             error:function(xhr, textStatus, error) {
+                alert('通信失敗');
+               }
+           });
+       }  
 
 //日時の０埋め
 function toDoubleDigits(num) {

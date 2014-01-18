@@ -29,5 +29,12 @@ html(lang='ja')
     block content
       h1= title
       p Welcome to #{lineParams.lineId}
+      .row
+        .col-lg-12
+            #lineChart
 
-      #lineChart
+      .row
+        .col-lg-6
+            button#btn1.btn.btn-primary.btn-lg.btn-block(type='button') GETDATA
+        .col-lg-6
+            button#btn2.btn.btn-success.btn-lg.btn-block(type='button') GETDATA

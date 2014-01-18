@@ -5,9 +5,8 @@
 //socket.ioのソケットを管理するオブジェクト
 var socketsOf = {};
 var config = require('./socketconf');
-var radisclient = require('redis').createClient(config.redisPort,config.redisHost),
-      async = require('async');
-var frontLine;
+var radisclient = require('redis').createClient(config.redisPort,config.redisHost);
+//var frontLine;
       
 
 exports.init = function(io){
@@ -19,7 +18,7 @@ exports.init = function(io){
     });
     
     // '/line' namespaceを定義
-    frontLine = io.of('/line').authorization(function(handshakeData,callback){
+    io.of('/line').authorization(function(handshakeData,callback){
             //namespace毎の認証
             
             //handshakeData.foo = 'qwertasdfg';
@@ -60,7 +59,7 @@ exports.onConnection = function(socket){
     });
 };
 */
-
+/*
 exports.pushPoints = function(req,res){
     console.log(req.body);
     frontLine.in(req.body.lineid).emit('roomto',req.body);
@@ -69,3 +68,4 @@ exports.pushPoints = function(req,res){
     res.send(200);
     return;
 };
+*/ //廃止

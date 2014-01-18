@@ -9,6 +9,7 @@ var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 var config = require('./config');
+var async = require('async');
 var SessionStore = require('connect-redis')(express);
 var realtimesockets = require('./sockets/realtime');
 
@@ -24,6 +25,8 @@ var RedisStore = require('socket.io/lib/stores/redis'),
       sub = redis.createClient(redisport,redishost),
       redisclient = redis.createClient(redisport,redishost);
       
+var sub1 = redis.createClient(redisport,redishost),
+      sub2 = redis.createClient(redisport,redishost);
 // Socket.IO
 var io = require('socket.io').listen(server,{
     'store':new RedisStore({
@@ -43,17 +46,19 @@ var io = require('socket.io').listen(server,{
     }
 });
 
+      
 realtimesockets.init(io);
 
-/*
-io.configure(function(){
-    io.set('store',new RedisStore({
-        redisPub:pub,
-        redisSub:sub,
-        redisClient:redisclient
-    }));
+sub1.subscribe('linepub:1');
+sub1.on('message',function(channel,message){
+     var obj = JSON.parse(message);
+     io.of('/line').in('1').emit('roomto',{celsius:obj.celsius,humidity:obj.humidity,t_date:obj.t_date});
 });
-*/
+
+sub2.subscribe('linepub:2');
+sub2.on('message',function(channel,message){
+     
+});
 
 //動的に名前空間を追加する
 /*
@@ -128,7 +133,7 @@ app.get('/line/:lineId',routes.line);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
 app.post(﻿'/api/getlog',routes.getLog);
-app.post('/api/wsgate',realtimesockets.pushPoints);
+//app.post('/api/wsgate',realtimesockets.pushPoints); 廃止
 
 //待ち受け開始
 server.listen(app.get('port'),function(){
