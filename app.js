@@ -49,16 +49,40 @@ var io = require('socket.io').listen(server,{
       
 realtimesockets.init(io);
 
-sub1.subscribe('linepub:1');
+sub1.subscribe('linepub');
 sub1.on('message',function(channel,message){
+    console.log(message);
      var obj = JSON.parse(message);
-     io.of('/line').in('1').emit('roomto',{celsius:obj.celsius,humidity:obj.humidity,t_date:obj.t_date});
+     var obj_wk = {
+                    lineid:obj.lineid,
+                    lineno:obj.lineno,
+                    celsius:obj.celsius,
+                    humidity:obj.humidity,
+                    setcelsius:obj.setcelsius,
+                    sethumidity:obj.sethumidity,
+                    mcn1:obj.mcn1,
+                    mcn2:obj.mcn2,
+                    t_date:obj.t_date
+                };
+     //io.of('/line').in('1').emit('roomto',{celsius:obj.celsius,humidity:obj.humidity,t_date:obj.t_date});
+     io.of('/summary').emit('roomto',obj_wk);
 });
-
-sub2.subscribe('linepub:2');
+/*
+sub2.subscribe('linepub:1:2');
 sub2.on('message',function(channel,message){
-     
+     var obj = JSON.parse(message);
+     var obj_wk = {
+                    celsius:obj.celsius,
+                    humidity:obj.humidity,
+                    setcelsius:obj.setcelsius,
+                    sethumidity:obj.sethumidity,
+                    mcn1:obj.mcn1,
+                    mcn2:obj.mcn2,
+                    t_date:obj.t_date
+                };
+    io.of('/summary').in('1:2').emit('roomto',obj_wk);     
 });
+*/
 
 //動的に名前空間を追加する
 /*
@@ -130,9 +154,13 @@ app.get('/logout',routes.logout);
 app.get('/dashboard',routes.dashboard);
 app.get('/record/:lineId',routes.record);
 app.get('/line/:lineId',routes.line);
+app.get('/summary',routes.summary);
+app.get('/sample',routes.sample);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
 app.post(﻿'/api/getlog',routes.getLog);
+app.post('/api/changesetting',routes.changesetting);
+app.post('/api/getsetting',routes.getsetting);
 //app.post('/api/wsgate',realtimesockets.pushPoints); 廃止
 
 //待ち受け開始

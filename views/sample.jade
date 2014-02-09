@@ -1,0 +1,174 @@
+doctype html
+html(lang='ja')
+  head
+    meta(name='viewport',content='target-densitydpi=device-dpi,width=device-width,initial-scale=1.0,user-scalable=yes')
+    title= title
+    block css
+        link(rel='stylesheet',href='/stylesheets/bootstrap.min.css')
+        link(rel='stylesheet',href='/stylesheets/bootstrap-theme.min.css')
+        link(rel='stylesheet',href='/stylesheets/jquery-ui-1.10.3.custom.min.css')
+        link(rel='stylesheet',href='/stylesheets/jquery-ui-timepicker-addon.min.css')
+        link(rel='stylesheet',href='/stylesheets/jquery.sidr.dark.css')
+        link(rel='stylesheet',href='/lib/jquery.jqplot.min.css')
+        link(rel='stylesheet',href='/stylesheets/style.css')
+        link(rel='stylesheet',href='/stylesheets/summary.css')
+        link(rel='stylesheet',href='/stylesheets/sample.css')
+        link(rel='stylesheet',href='/stylesheets/flat/orange.css')
+    block script
+        script(src='/javascripts/jquery-1.10.2.min.js',type='text/javascript')
+        script(src='/javascripts/jquery-ui-1.10.3.custom.min.js')
+        script(src='/javascripts/jquery-ui-timepicker-addon.min.js')
+        script(src='/javascripts/jquery-ui-sliderAccess.js')
+        script(src='/javascripts/jquery-ui-tiamepicker-ja.js')
+        script(src='/javascripts/bootstrap.min.js',type='text/javascript')
+        script(src='/javascripts/jquery.sidr.min.js',type='text/javascript')
+        script(src='/socket.io/socket.io.js')
+        script(src='/javascripts/jquery.flot.js')
+        script(src='/javascripts/jquery.flot.selection.min.js')
+        script(src='/javascripts/jquery.flot.time.min.js')
+        script(src='/lib/jquery.jqplot.min.js')
+        script(src='/lib/plugins/jqplot.dateAxisRenderer.min.js')
+        script(src='/lib/plugins/jqplot.cursor.min.js')
+        script(src='/lib/plugins/jqplot.highlighter.min.js')
+        script(src='/lib/plugins/jqplot.canvasTextRenderer.min.js')
+        script(src='/lib/plugins/jqplot.canvasAxisLabelRenderer.min.js')
+        script(src='/lib/plugins/jqplot.canvasOverlay.min.js')
+        script(src='/lib/plugins/jqplot.pointLabels.min.js')
+        script(src='/lib/plugins/jqplot.categoryAxisRenderer.min.js')
+        script(src='/lib/plugins/jqplot.barRenderer.min.js')
+        script(src='/javascripts/jquery.knob.js')
+        script(src='/javascripts/icheck.min.js')
+        script(src='/javascripts/sample.js',type='text/javascript')
+  body
+  block content
+  .row
+            .col-lg-12
+                nav.navbar.navbar-default.navbar-fixed-top(role='navigation')
+                    .navbar-header.rl
+                        a.navbar-brand.vflogo.simple-menu(href='#sidr') VF
+                    .collapse.navbar-collapse
+                        p.navbar-text(style='font-size:19px')
+                            i.glyphicon.glyphicon-list-alt
+                            | &nbsp サマリー
+                        .infodiv
+                            p#info_p.navbar-text.c_p
+                              span.glyphicon.glyphicon-info-sign
+                              | &nbsp受信待機中・・・
+                            .progress.progress-striped.active.c_progress
+                                #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
+
+    #sidr
+     ul
+       li: a.simple-menu(href='#')
+           span.glyphicon.glyphicon-remove.sidr-span.icon-off-white
+           | CLOSE
+       li: a(href='#')
+           span.glyphicon.glyphicon-calendar.icon-orange6.sidr-span
+           | スケジュール
+       li: a(href='/record')
+           span.glyphicon.glyphicon-book.icon-orange7.sidr-span
+           | レコード
+       li: a(href='#')
+           span.glyphicon.glyphicon-user.icon-orange1.sidr-span
+           | 作業管理
+       li: a(href='#')
+           span.glyphicon.glyphicon-download-alt.icon-orange2.sidr-span
+           | データ配信
+       li: a(href='#')
+           span.glyphicon.glyphicon-phone.icon-orange3.sidr-span
+           | 端末管理　
+       li: a(href='#')
+           span.glyphicon.glyphicon-cog.icon-orange4.sidr-span
+           | 設定
+  
+  #maincontainer
+      .page-header
+            h4 ライン1
+      .row
+        .col-lg-2
+                    form.form-horizontal(role='form')
+                      .form-group
+                          label.col-lg-2.control-label(for='targetCelsius') targetCelsius
+                          .col-lg-10
+                              input.form-control#targetCelsius(type='email',placeholder='targetCelsius')
+                      .form-group
+                          label.col-lg-2.control-label(for='targetHumidity') targetHumidity
+                          .col-lg-10
+                              input.form-control#targetHumidity(type='email',placeholder='targetHumidity')
+                      .form-group
+                          label.col-lg-2.control-label(for='delayCelsius') delayCelsius
+                          .col-lg-10
+                              input.form-control#delayCelsius(type='email',placeholder='delayCelsius')
+                      .form-group
+                          label.col-lg-2.control-label(for='delayHumidity') delayHumidity
+                          .col-lg-10
+                              input.form-control#delayHumidity(type='email',placeholder='delayHumidity') 
+
+                      .form-group
+                          .col-lg-offset-2.col-lg-10
+                              button#settingBtn.btn.btn-primary.btn-lg(type='button') 実行
+        .col-lg-2
+            .panel.panel-default
+                .panel-heading console
+                .panel-body#dataConsole
+                    ul.nav.nav-pills.nav-stacked
+                        li
+                            a(href='#')
+                              span.badge.pull-right **
+                              | 温度
+                        li
+                            a(href='#')
+                              span.badge.pull-right **
+                              | 設定温度
+                        li
+                            a(href='#')
+                              span.badge.pull-right **
+                              | 湿度
+                        li
+                            a(href='#')
+                              span.badge.pull-right **
+                              | 設定湿度
+        .col-lg-4
+            .panel.panel-default.panel-c
+                .panel-heading log
+                .panel-body
+                    table#linelogTable.table
+                        thead
+                            th 日時
+                            th 温度
+                            th 設定温度
+                            th 湿度
+                            th 設定湿度
+                        tbody
+        .col-lg-4
+            .panel.panel-default.panel-c
+                .panel-heading log
+                .panel-body
+                    content
+      .row
+        .col-lg-12
+            #lineChart(style='height:350px;')
+        .col-lg-12#checkbox-item-list
+                        label.control-label 表示項目
+                        label.checkbox-inline.addBackground: input#inlineCheckbox1(type='checkbox',name='celsData',checked='checked')
+                        label.checkbox-inline.addBackground: input#inlineCheckbox2(type='checkbox',name='humdData',checked='checked')
+                        label.checkbox-inline.addBackground: input#inlineCheckbox3(type='checkbox',name='setcelsius',checked='checked')
+                        label.checkbox-inline.addBackground: input#inlineCheckbox4(type='checkbox',name='sethumidity',checked='checked')
+                        label.checkbox-inline: input#inlineCheckbox5(type='checkbox',name='celsiusup')
+                        label.checkbox-inline: input#inlineCheckbox6(type='checkbox',name='celsiusdw')
+                        label.checkbox-inline: input#inlineCheckbox7(type='checkbox',name='humidityup')
+                        label.checkbox-inline: input#inlineCheckbox8(type='checkbox',name='humiditydw')   
+      .row#dateSelector   
+        .col-lg-offset-4
+        .col-lg-3
+            .input-group
+                span.input-group-addon 開始日付
+                input#datetimepicker1.form-control(type='text',placeholder='ex) 20140101',name='eventStart')
+        .col-lg-3        
+            .input-group
+                span.input-group-addon 終了日付
+                input#datetimepicker2.form-control(type='text',placeholder='ex) 20141229',name='eventEnd')
+        .col-lg-1
+            button#selectDateBtn.btn.btn-primary(type='button') 指定表示
+        .col-lg-1
+            button#realtimeBtn.btn.btn-primary(type='button') リアルタイム

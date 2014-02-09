@@ -93,6 +93,30 @@ exports.line = function(req,res){
    }); 
 };
 
+exports.summary = function(req,res){
+   /*
+    if(req.session.user === undefined) {
+       res.redirect(403,'/login');
+       return;
+   }
+   */
+    var lineData = ['1-1','1-2','2-1','2-2','3-1','4-1'];
+    res.render('summary',{
+        page:{title:'Summary'},
+        user:req.session.user,
+        lineData:lineData,
+        error:200
+    });    
+};
+
+exports.sample = function(req,res){
+    res.render('sample',{
+        page:{title:'Sample Page'},
+        user:req.session.user,
+        error:200
+    })
+};
+
 exports.record = function(req,res){
    if(req.session.user === undefined) {
        res.redirect(403,'/login');
@@ -117,36 +141,89 @@ exports.record = function(req,res){
 };
 
 exports.getRecordData = function(req,res){
-        var line = req.body.line;
+        var lineid = req.body.lineid;
         var lineno = req.body.lineno;
-        var start = new Date(req.body.start);
-        var end = new Date(req.body.end);
-        db_mushrecord.readRecordAll(line,lineno,start,end,function(err,results){
+        //var start = new Date(req.body.start);
+        //var end = new Date(req.body.end);
+        var start = req.body.start;
+        var end = req.body.end;
+        db_mushrecord.readRecord(lineid,lineno,start,end,function(err,results){
             if(err){
                 console.log(err);
                 res.send(500);
                 return;
             }
-            console.log(results);
             res.json(200,results);
             return;
         });
 };
 
 exports.getChart = function(req,res){
-    var key = 'linepub:'+req.body.lineid;
+    /*
+    var key = 'line:'+req.body.lineid+':'+req.body.lineno;
     redislibs.gethash(key,function(err,replies){
         if(err){
             console.log(err);
             res.send(500);
             return;
         }
-        console.log(replies);
         res.json(200,replies);
         return;
     });
+    */
+   var params = {
+      lineid:req.body.lineid,
+      lineno:req.body.lineno,
+      pubdate:req.body.pubdate
+   };
+   redislibs.getPubData(params,function(err,replies){
+       if(err){
+            console.log(err);
+            res.send(500);
+            return;
+        }
+        res.json(200,replies);
+        return;
+   });
+   
+};
+
+exports.changesetting = function(req,res){
+   var hashkey = 'linesetting'; 
+   var subkey = req.body.lineid + ':' + req.body.lineno;
+   var params = {
+       targetCelsius:req.body.targetCelsius,
+       targetHumidity:req.body.targetHumidity,
+       celsiusMode:req.body.celsiusMode,
+       humidityMode:req.body.humidityMode,
+       delayCelsius:{top:req.body.delayCelsius.top,under:req.body.delayCelsius.under},
+       delayHumidity:{top:req.body.delayhumidity.top,under:req.body.delayhumidity.under}
+   };
+   redislibs.sethash(hashkey,subkey,JSON.stringify(params),function(err,rep){
+       if(err){
+            console.log(err);
+            res.send(500);
+            return;
+        }
         
+        res.send(200);
+        return;
+   });
+};
+
+exports.getsetting = function(req,res){
+    var hashkey = 'linesetting';
+    var subkey = req.body.lineid + ':' + req.body.lineno;
     
+    redislibs.getSettingData(hashkey,subkey,function(err,rep){
+            if(err){
+                console.log(err);
+                res.send(500);
+                return;
+            }
+            res.json(200,rep);
+            return;
+    });
 };
 
 exports.getLog = function(req,res){

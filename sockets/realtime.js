@@ -10,27 +10,55 @@ var radisclient = require('redis').createClient(config.redisPort,config.redisHos
       
 
 exports.init = function(io){
+    /*
     io.sockets.on('connection',function(socket){
-        
+        console.log('ccccc');
         socket.on('clientConnect',function(data){
             console.log(data);
         });
     });
+    */
     
     // '/line' namespaceを定義
     io.of('/line').authorization(function(handshakeData,callback){
             //namespace毎の認証
-            
+            console.log('/line authorization');
             //handshakeData.foo = 'qwertasdfg';
             callback(null,true);
         })
         .on('connection',function(socket){
-            //  /line/lineidという細分化をする
-            socket.join(socket.handshake.query.lineid);
+            //  /line/lineid:linenoという細分化をする
+            console.log('/line connection.');
+            socket.join(socket.handshake.query.lineid+':'+socket.handshake.query.lineno);
             socket.on('clientConnect',function(data){
                 
             });
          });
+         
+     var summary = io.of('/summary').on('connection',function(client){
+         console.log('/summary on connection.');
+         client.emit('connected');
+         client.on('init',function(req){
+             //client.set('lineid',req.lineid);
+             //summary.to(req.lineid).emit('System','Summary Socket.');
+             //client.emit('System','Summary Client.');
+             //client.join(req.lineid);
+             console.log(io.sockets.manager.rooms);
+             console.log('**********************************************************');
+             //client.json.emit('initialized',{'lineid':req.lineid});
+         });
+         
+         client.on('disconnect',function(){
+             var lineid,lineno;
+             client.get('lineid',function(err,_lineid){
+                 lineid = _lineid;
+             });
+            
+             client.leave(lineid);
+         });
+     });
+         
+     
 };
 
 //引数としてクライアントとの通信を行うためのsocketオブジェクトが与えられる

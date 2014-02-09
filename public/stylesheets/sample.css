@@ -1,0 +1,32 @@
+.well > p {
+    margin:0 10px 0 10px !important;
+    font-size:20px;
+}
+
+label {
+    padding:0;
+    font-size:15px;
+}
+
+li {
+    font-weight:bold;
+}
+
+.panel-c {
+    height:350px;
+}
+
+.panel-c > .panel-body {
+    height:307px;
+    overflow: scroll;
+}
+
+#dateSelector {
+    margin:10px 0px 10px 0px;
+    padding:10px;
+    background:#EEE;
+}
+
+#dateSelector > button {
+    margin:10px;
+}
