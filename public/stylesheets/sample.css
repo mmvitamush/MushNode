@@ -13,20 +13,61 @@ li {
 }
 
 .panel-c {
-    height:350px;
+    height:400px;
 }
 
 .panel-c > .panel-body {
-    height:307px;
+    height:357px;
     overflow: scroll;
 }
 
 #dateSelector {
-    margin:10px 0px 10px 0px;
+    margin:15px 0px 15px 0px;
     padding:10px;
     background:#EEE;
 }
 
 #dateSelector > button {
     margin:10px;
+}
+
+.stremWrap > span:nth-child(4){
+    color: #dadada;
+    left: 96px;
+    font-size: 45px;
+    top: 164px;
+    position: absolute;
+}
+
+.stremWrap > span.glyphicon-fire {
+    -webkit-animation-name: 'anime1';
+    -webkit-animation-duration: 5s;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-delay:0;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction:alternate;
+}
+
+.stremWrap > span.glyphicon-tint {
+    -webkit-animation-name: 'anime2';
+    -webkit-animation-duration: 5s;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-delay:0;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction:alternate;
+}
+
+@-webkit-keyframes 'anime1' {
+    0% {    color:#dadada;  }
+    100% {  color:#ED5D5C;  }
+}
+@-webkit-keyframes 'anime2' {
+    0% {    color:#dadada;  }
+    100% {  color:#98D1CD;  }
+}
+
+
+.input-group-c {
+    margin-bottom:22px;
+    margin-top:22px;
 }

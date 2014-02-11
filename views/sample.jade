@@ -85,67 +85,42 @@ html(lang='ja')
       .page-header
             h4 ライン1
       .row
-        .col-lg-2
-                    form.form-horizontal(role='form')
-                      .form-group
-                          label.col-lg-2.control-label(for='targetCelsius') targetCelsius
-                          .col-lg-10
-                              input.form-control#targetCelsius(type='email',placeholder='targetCelsius')
-                      .form-group
-                          label.col-lg-2.control-label(for='targetHumidity') targetHumidity
-                          .col-lg-10
-                              input.form-control#targetHumidity(type='email',placeholder='targetHumidity')
-                      .form-group
-                          label.col-lg-2.control-label(for='delayCelsius') delayCelsius
-                          .col-lg-10
-                              input.form-control#delayCelsius(type='email',placeholder='delayCelsius')
-                      .form-group
-                          label.col-lg-2.control-label(for='delayHumidity') delayHumidity
-                          .col-lg-10
-                              input.form-control#delayHumidity(type='email',placeholder='delayHumidity') 
+        .col-lg-3
+            .dial2Wrap
+                input#dial1(type='text',data-width='240',data-height='240',data-linecap='round')
+        .col-lg-3
+            .dial2Wrap
+                input#dial2(type='text',data-width='240',data-height='240',data-linecap='round')
+        .col-lg-3
+                      .input-group.input-group-c
+                          span.input-group-addon 目標温度
+                          input.form-control#targetCelsius(type='text',placeholder=' ex) 25.5')
+                          span.input-group-btn
+                            button.btn.btn-primary(type='button') 設定
 
-                      .form-group
-                          .col-lg-offset-2.col-lg-10
-                              button#settingBtn.btn.btn-primary.btn-lg(type='button') 実行
-        .col-lg-2
-            .panel.panel-default
-                .panel-heading console
-                .panel-body#dataConsole
-                    ul.nav.nav-pills.nav-stacked
-                        li
-                            a(href='#')
-                              span.badge.pull-right **
-                              | 温度
-                        li
-                            a(href='#')
-                              span.badge.pull-right **
-                              | 設定温度
-                        li
-                            a(href='#')
-                              span.badge.pull-right **
-                              | 湿度
-                        li
-                            a(href='#')
-                              span.badge.pull-right **
-                              | 設定湿度
-        .col-lg-4
-            .panel.panel-default.panel-c
-                .panel-heading log
-                .panel-body
-                    table#linelogTable.table
-                        thead
-                            th 日時
-                            th 温度
-                            th 設定温度
-                            th 湿度
-                            th 設定湿度
-                        tbody
-        .col-lg-4
-            .panel.panel-default.panel-c
-                .panel-heading log
-                .panel-body
-                    content
-      .row
+                      .input-group.input-group-c
+                          span.input-group-addon 目標湿度
+                          input.form-control#targetHumidity(type='text',placeholder=' ex) 55.5')
+                          span.input-group-btn
+                            button.btn.btn-primary(type='button') 設定
+
+                      .input-group.input-group-c
+                          span.input-group-addon 温度感度
+                          input.form-control#delayCelsius(type='text',placeholder=' ex) 3')
+                          span.input-group-btn
+                            button.btn.btn-primary(type='button') 設定
+
+                      .input-group.input-group-c
+                          span.input-group-addon 温度感度
+                          input.form-control#delayHumidity(type='text',placeholder=' ex) 3')
+                          span.input-group-btn
+                            button.btn.btn-primary(type='button') 設定
+
+                      button#settingBtn.btn.btn-primary.btn-block.input-group-c(type='button') 一括設定
+        .col-lg-3
+            
+                
+      .row(style='background:#EEE; padding:10px;')
         .col-lg-12
             #lineChart(style='height:350px;')
         .col-lg-12#checkbox-item-list
@@ -172,3 +147,23 @@ html(lang='ja')
             button#selectDateBtn.btn.btn-primary(type='button') 指定表示
         .col-lg-1
             button#realtimeBtn.btn.btn-primary(type='button') リアルタイム
+      .row
+        .col-lg-5(style='padding:0 10px !important;')
+            .panel.panel-default.panel-c
+                .panel-heading log
+                .panel-body
+                    table#linelogTable.table
+                        thead
+                            th 日時
+                            th 温度
+                            th 設定温度
+                            th 湿度
+                            th 設定湿度
+                        tbody
+        .col-lg-7(style='padding:0 10px !important;')
+            #motionFrame
+                .panel.panel-default.panel-c
+                    .panel-heading
+                         span.glyphicon.glyphicon-camera 
+                         | photoStream
+                    .panel-body

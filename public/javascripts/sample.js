@@ -22,7 +22,8 @@ sLabels = {
 
 //初期値のセット
 var stackColor = [sColors.celsData,sColors.humdData],
-       stackLabel = [sLabels.celsData,sLabels.humdData];
+       stackLabel = [sLabels.celsData,sLabels.humdData],
+       prevPoints = {'celsius':0,'humidity':0};
 gfd = [];
 gfd['celsData'] = [["00:00",0]];
 gfd['humdData'] = [["00:00",0]];
@@ -32,6 +33,28 @@ targetLine['setcelsius'] = 0;
 targetLine['sethumidity'] = 0;
 var maxPlot = 60;
 var realtime_flg = true;
+
+param1 = {
+        min:0,
+        max:40,
+        fgColor:'#ED5D5C',
+        bgColor:'#E6E4DF',
+        inputColor:'#323A45',
+        thickness:'.1',
+        readOnly:true,
+        displayInput:false
+    };
+    
+    param2 = {
+        min:0,
+        max:80,
+        fgColor:'#98D1CD',
+        bgColor:'#E6E4DF',
+        inputColor:'#323A45',
+        thickness:'.1',
+        readOnly:true,
+        displayInput:false
+    };
 
 options = {
         title : 'LINEデータ',
@@ -109,14 +132,14 @@ $(document).ready(function() {
     window.onresize = function(event){
        replot(); 
     };
+    $('#dial1').knob(param1);
+    setknobLabel(1);
+    $('#dial2').knob(param2);
+    setknobLabel(2);
 });
 
 $(function(){
     $('#settingBtn').click(function(){
-        console.log('clicked.');
-        //options.canvasOverlay.objects[0].dashedHorizontalLine.y = 55
-        //options.canvasOverlay.objects[1].dashedHorizontalLine.y = 33;
-     
         var setData = {
                 lineid:1,
                 lineno:1,
@@ -213,8 +236,14 @@ $(window).load(function(){
     };
     
     var rep = ajaxLoading('http://www.vita-factory.com/api/getsetting','post','json',setData);
-    $('#dataConsole ul li  a span').eq(1).text(rep.targetCelsius);
-    $('#dataConsole ul li  a span').eq(3).text(rep.targetHumidity);
+    $('#dial1').parent('div').find('.stremWrap').find('span').eq(2).text(rep.targetCelsius);
+    $('#dial2').parent('div').find('.stremWrap').find('span').eq(2).text(rep.targetHumidity);
+    $('#dial1').trigger('configure',{
+         "max":rep.targetCelsius
+    }); 
+    $('#dial2').trigger('configure',{
+          "max":rep.targetHumidity
+     });
     
     targetLine['setcelsius'] = rep.targetCelsius;
     targetLine['sethumidity'] = rep.targetHumidity;
@@ -238,17 +267,31 @@ function socketInit(socket,obj){
          //socket.json.emit('init',{'lineid':obj.lineid});
      });
      
+     //サーバーからredisのpublish情報を受け取った
      socket.on('roomto',function(obj){
          console.log(obj);
          if(realtime_flg){
-                $('#dataConsole ul li  a span').eq(0).text(obj.celsius);
-                $('#dataConsole ul li  a span').eq(2).text(obj.humidity);
+                $('#dial1').parent('div').find('.stremWrap').find('span').eq(0).text(obj.celsius);
+                $('#dial2').parent('div').find('.stremWrap').find('span').eq(0).text(obj.humidity);
                 setPlot({celsius:obj.celsius,
                                humidity:obj.humidity,
                                t_date:obj.t_date
                    });
                    replot();
         }
+        changeKnobValue($('#dial1'),obj.celsius,'celsius');
+        changeKnobValue($('#dial2'),obj.humidity,'humidity');
+     });
+     
+     socket.on('changesetting',function(obj){
+            console.log('socket changesetting');
+            console.log(obj);
+            $('#dial1').trigger('configure',{
+                "max":obj.targetCelsius
+            }); 
+            $('#dial2').trigger('configure',{
+                "max":obj.targetHumidity
+            }); 
      });
      
      socket.on('disconnect',function(){
@@ -260,6 +303,32 @@ function socketInit(socket,obj){
      });
 }
 
+function changeKnobValue(doc,newValue,label){
+    
+    $({value:prevPoints[label]}).animate({value:newValue},{
+              duration:1200,
+              easing:'swing',
+              step:function(){
+                  doc.val(this.value).trigger('change');
+                  prevPoints[label] = newValue;
+              }
+    });
+}
+
+//knob中心部にlabelをセット
+function setknobLabel(knobno){
+    $('#dial'+knobno).parent('div')
+            .append('<div class="labelWrap"></div>').find('.labelWrap')
+            .append('<span>現在値</span><span>&nbsp/&nbsp</span><span>設定値</span>');
+    var doc = $('#dial'+knobno).parent('div')
+            .append('<div class="stremWrap"></div>').find('.stremWrap')
+            .append('<span>***</span><span style="color:#E6E4DF">&nbsp/&nbsp</span><span>***</span>');
+    if (knobno === 1){
+        doc.append('<span class="glyphicon glyphicon-fire"></span>');
+    }else{
+        doc.append('<span class="glyphicon glyphicon-tint"></span>');
+    }
+}
 
 //非同期通信でサーバからデータを受信する
 function ajaxLoading(url,type,dataType,data){
@@ -343,8 +412,6 @@ function setGraphData(){
     }
     */
 };
-
-
 
 //checkboxの状態を見て表示すべきグラフデータを作成する
 function checkGraphData(){
