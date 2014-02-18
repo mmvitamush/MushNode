@@ -1,0 +1,56 @@
+extends newlayout
+append css
+    link(rel='stylesheet',href='/stylesheets/iThing.css')
+    link(rel='stylesheet',href='/stylesheets/schedule.css')
+append script
+    script(src='/socket.io/socket.io.js')
+    script(src='/javascripts/jQAllRangeSliders-min.js')
+    script(src='/javascripts/schedule.js')
+block content
+ #maincontainer
+    - var name = lineParams.lineid + ':' + lineParams.lineno;
+    .page-header
+        h4(style='margin-left:15px;') ライン#{name}
+    .row
+        .col-md-3
+                .col-md-12
+                    select.form-control#RelaySelector
+                        option(value='0') --- 選択 ---
+                        option(value='1') リレー１ : 温度
+                        option(value='2') リレー２ : 湿度
+                        option(value='3') リレー３ : 換気
+                        option(value='4') リレー４ : 日照
+                .col-md-12(style='margin-top:15px;')
+                    h4#RelayLabel 制御機器
+                    #range1.range-celsius
+
+                .col-md-12
+                    p 上限到達時
+                        label
+                             input.celsiusTopRangeRadio(type='radio',name='TopRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.celsiusTopRangeRadio(type='radio',name='TopRange',value='1')
+                             | ON
+                    p 下限到達時
+                        label
+                             input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='1')
+                             | ON
+
+                .col-md-12(style='margin-bottom:20px;')
+                  .row
+                    .col-lg-12(style='margin-bottom:20px;')
+                        .input-group
+                            span.input-group-addon 開始日時
+                            input#datetimepicker1.form-control(type='text',placeholder='ex) 20140101',name='eventStart')
+                    .col-lg-12       
+                        .input-group
+                            span.input-group-addon 終了日時
+                            input#datetimepicker2.form-control(type='text',placeholder='ex) 20141229',name='eventEnd')
+                .col-md-12
+                    button#setBtn.btn.btn-block.btn-primary 設定登録
+        .col-md-6            
+            button#schedulegetBtn(type='button') Schedule GET

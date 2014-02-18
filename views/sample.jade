@@ -14,6 +14,8 @@ html(lang='ja')
         link(rel='stylesheet',href='/stylesheets/summary.css')
         link(rel='stylesheet',href='/stylesheets/sample.css')
         link(rel='stylesheet',href='/stylesheets/flat/orange.css')
+        link(rel='stylesheet',href='/stylesheets/aw-showcase.css')
+        link(rel='stylesheet',href='/stylesheets/iThing.css')
     block script
         script(src='/javascripts/jquery-1.10.2.min.js',type='text/javascript')
         script(src='/javascripts/jquery-ui-1.10.3.custom.min.js')
@@ -38,7 +40,10 @@ html(lang='ja')
         script(src='/lib/plugins/jqplot.barRenderer.min.js')
         script(src='/javascripts/jquery.knob.js')
         script(src='/javascripts/icheck.min.js')
+        script(src='/javascripts/jquery.aw-showcase.min.js')
+        script(src='/javascripts/jQAllRangeSliders-min.js')
         script(src='/javascripts/sample.js',type='text/javascript')
+        script(src='/javascripts/settingScript.js',type='text/javascript')
   body
   block content
   .row
@@ -50,21 +55,27 @@ html(lang='ja')
                         p.navbar-text(style='font-size:19px')
                             i.glyphicon.glyphicon-list-alt
                             | &nbsp サマリー
-                        .infodiv
-                            p#info_p.navbar-text.c_p
-                              span.glyphicon.glyphicon-info-sign
-                              | &nbsp受信待機中・・・
-                            .progress.progress-striped.active.c_progress
-                                #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
-
+                        .nav.navbar-nav.nav-right(style='position:absolute; top:10px; right:10px;')
+                            button#deviceSettingButton.btn.btn-default(data-toggle='modal',data-target='#deviceSettingModal',style='padding: 10px 12px 6px 12px !important;')
+                                span.glyphicon.glyphicon-cog    
+                        .nav.navbar-nav.nav-right(style='position:absolute; top:10px; right:60px;')
+                            button#allsettingButton.btn.btn-default(data-toggle='modal',data-target='#settingModal',style='padding: 10px 12px 6px 12px !important;')
+                                span.glyphicon.glyphicon-envelope
+                        .nav.navbar-nav.nav-right(style='position:absolute; top:10px; right:110px;')
+                            button#allpictureButton.btn.btn-default(data-toggle='modal',data-target='#pictureModal',style='padding: 10px 12px 6px 12px !important;')
+                                span.glyphicon.glyphicon-picture    
+                        .nav.navbar-nav.nav-right(style='position:absolute; top:10px; right:160px;')
+                            button#alllineButton.btn.btn-default(data-toggle='modal',data-target='#lineModal',style='padding: 10px 12px 6px 12px !important;')
+                                span.glyphicon.glyphicon-eye-open       
+       
     #sidr
      ul
        li: a.simple-menu(href='#')
            span.glyphicon.glyphicon-remove.sidr-span.icon-off-white
            | CLOSE
-       li: a(href='#')
+       li: a(href='/schedule')
            span.glyphicon.glyphicon-calendar.icon-orange6.sidr-span
-           | スケジュール
+           | スケジュール&リレー設定
        li: a(href='/record')
            span.glyphicon.glyphicon-book.icon-orange7.sidr-span
            | レコード
@@ -84,6 +95,13 @@ html(lang='ja')
   #maincontainer
       .page-header
             h4 ライン1
+            .infodiv
+                            p#info_p.navbar-text.c_p
+                              span.glyphicon.glyphicon-info-sign
+                              | &nbsp受信待機中・・・
+                            .progress.progress-striped.active.c_progress
+                                #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
+                        
       .row
         .col-lg-3
             .dial2Wrap
@@ -91,36 +109,60 @@ html(lang='ja')
         .col-lg-3
             .dial2Wrap
                 input#dial2(type='text',data-width='240',data-height='240',data-linecap='round')
-        .col-lg-3
-                      .input-group.input-group-c
-                          span.input-group-addon 目標温度
-                          input.form-control#targetCelsius(type='text',placeholder=' ex) 25.5')
-                          span.input-group-btn
-                            button.btn.btn-primary(type='button') 設定
-
-                      .input-group.input-group-c
-                          span.input-group-addon 目標湿度
-                          input.form-control#targetHumidity(type='text',placeholder=' ex) 55.5')
-                          span.input-group-btn
-                            button.btn.btn-primary(type='button') 設定
-
-                      .input-group.input-group-c
-                          span.input-group-addon 温度感度
-                          input.form-control#delayCelsius(type='text',placeholder=' ex) 3')
-                          span.input-group-btn
-                            button.btn.btn-primary(type='button') 設定
-
-                      .input-group.input-group-c
-                          span.input-group-addon 温度感度
-                          input.form-control#delayHumidity(type='text',placeholder=' ex) 3')
-                          span.input-group-btn
-                            button.btn.btn-primary(type='button') 設定
-
-                      button#settingBtn.btn.btn-primary.btn-block.input-group-c(type='button') 一括設定
-        .col-lg-3
-            
-                
-      .row(style='background:#EEE; padding:10px;')
+        .col-lg-6
+            .row
+                .col-md-6
+                    h4 温度設定
+                    span.warning-span Warning
+                    span.slider-span 00
+                    #slider1.celsius-ui-widget
+                .col-md-6
+                    h4 湿度設定
+                    span.warning-span Warning
+                    span.slider-span 00
+                    #slider2.humidity-ui-widget
+                .col-md-6
+                    h4 温度上限・下限
+                    span.warning-span Warning
+                    #range1.range-celsius
+                .col-md-6
+                    h4 湿度下限・下限
+                    span.warning-span Warning
+                    #range2.range-humidity
+                .col-md-6
+                    p 上限到達時
+                        label
+                             input.celsiusTopRangeRadio(type='radio',name='celsiusTopRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.celsiusTopRangeRadio(type='radio',name='celsiusTopRange',value='1')
+                             | 冷却
+                    p 下限到達時
+                        label
+                             input.celsiusBottomRangeRadio(type='radio',name='celsiusBottomRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.celsiusBottomRangeRadio(type='radio',name='celsiusBottomRange',value='1')
+                             | 暖房
+                .col-md-6
+                    p 上限到達時
+                        label
+                             input.humidityTopRangeRadio(type='radio',name='humidityTopRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.humidityTopRangeRadio(type='radio',name='humidityTopRange',value='1')
+                             | 除湿
+                    p 下限到達時
+                        label
+                             input.humidityBottomRangeRadio(type='radio',name='humidityBottomRange',value='0',checked='checked')
+                             | OFF
+                        label
+                             input.humidityBottomRangeRadio(type='radio',name='humidityBottomRange',value='1')
+                             | 加湿   
+                .col-md-12
+                    button#sliderBtn.btn.btn-block.btn-primary 設定送信
+                      
+      .row(style='background:#EEE; padding:10px; margin-top:20px;')
         .col-lg-12
             #lineChart(style='height:350px;')
         .col-lg-12#checkbox-item-list
@@ -150,9 +192,9 @@ html(lang='ja')
       .row
         .col-lg-5(style='padding:0 10px !important;')
             .panel.panel-default.panel-c
-                .panel-heading log
+                .panel-heading 指定レコードログ
                 .panel-body
-                    table#linelogTable.table
+                    table#lineRecordTable.table
                         thead
                             th 日時
                             th 温度
@@ -160,10 +202,85 @@ html(lang='ja')
                             th 湿度
                             th 設定湿度
                         tbody
-        .col-lg-7(style='padding:0 10px !important;')
-            #motionFrame
-                .panel.panel-default.panel-c
-                    .panel-heading
-                         span.glyphicon.glyphicon-camera 
-                         | photoStream
-                    .panel-body
+        
+        .col-lg-3
+            .panel.panel-default.panel-c
+                .panel-heading リアルタイムログ
+                .panel-body 
+                    table#line1logTable.table
+                        thead
+                            tr
+                                th 日時
+                                th 温度
+                                th 湿度
+                        tbody                
+
+.modal.fade#deviceSettingModal
+    .modal-dialog
+        .modal-content
+             .modal-header
+                    button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
+                    h4.modal-title デバイス設定画面
+             .modal-body
+
+
+.modal.fade#settingModal
+    .modal-dialog
+        .modal-content
+             .modal-header
+                    button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
+                    h4.modal-title#myModalLabel メール設定画面
+             .modal-body
+                .row
+                    .col-lg-12
+                        table.table.table-hover
+                            thead
+                                tr
+                                    th 
+                                    th ユーザー名
+                                    th アドレス
+                                    th メール送信設定
+                                    th 
+                            tbody#mailSettingBody
+
+.modal.fade#pictureModal
+    .modal-dialog
+        .modal-content
+             .modal-header
+                    button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
+                    h4.modal-title 画像管理画面
+             .modal-body(style='padding:0 !important')
+                .row.picture_row
+                    .col-lg-3
+                        .input-group
+                            span.input-group-addon 開始日付
+                            input#datetimepicker3.form-control(type='text',placeholder='ex) 20140101',name='pictureStart')
+                    .col-lg-3        
+                        .input-group
+                            span.input-group-addon 終了日付
+                            input#datetimepicker4.form-control(type='text',placeholder='ex) 20141229',name='pictureEnd')
+                    .col-lg-1
+                        button#selectPictureDateBtn.btn.btn-primary(type='button') 指定表示
+                #showcase.showcase
+                    - for(var i=0; i<7; i++){
+                    - var name = '/images/0'+(i+1)+'.jpg';
+                    - var alt = '0'+(i+1);
+                           .showcase-slide
+                                .showcase-content
+                                    img(src=name,alt=alt)
+                                .showcase-thumbnail
+                                    img(src=name,alt=alt,width='140px')
+                    - }
+
+.modal.fade#lineModal
+    .modal-dialog
+        .modal-content
+             .modal-header
+                    button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
+                    h4.modal-title ライン一覧画面
+             .modal-body
+                       .row
+                            - for(var i = 0; i < lineLabel.length; i++) {
+                            - var str
+                                 .col-md-4.col-p15: a(href='#{lineLabel[i]}'): p #{lineLabel[i]}
+                            - }

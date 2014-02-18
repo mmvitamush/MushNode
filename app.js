@@ -156,11 +156,16 @@ app.get('/record/:lineId',routes.record);
 app.get('/line/:lineId',routes.line);
 app.get('/summary',routes.summary);
 app.get('/sample',routes.sample);
+app.get('/schedule/:lineid/:lineno',routes.schedule);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
 app.post(﻿'/api/getlog',routes.getLog);
 app.post('/api/changesetting',routes.changesetting);
 app.post('/api/getsetting',routes.getsetting);
+app.post('/api/getTimeSchedule',routes.getTimeSchedule);
+app.post('/api/getS3Photo',routes.getS3Photo);
+app.post('/api/getUsers',routes.getUsers);
+app.post('/mail/send',routes.sendmail);
 //app.post('/api/wsgate',realtimesockets.pushPoints); 廃止
 
 //待ち受け開始

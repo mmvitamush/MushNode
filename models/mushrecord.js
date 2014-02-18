@@ -30,3 +30,142 @@ mushrecord.readRecordAll = function(line,lineno,start,end,callback){
             callback(err,results);
     });
 };
+
+mushrecord.insertUsers = function(params){
+    var param = [
+           params.userid,
+           params.username,
+           params.passwd,
+           params.mailaddress,
+           params.maildanger,
+           params.mailwarning,
+           params.level
+        ];
+        console.log(param);
+        db.query(
+                'INSERT INTO Users '
+                + '(userid,username,passwd,mailaddress,maildanger,mailwarning,level) '
+                + 'values(?,?,?,?,?,?,?)'
+                + ';',
+            param,
+            function(err,results){
+                    db.end();
+                    //console.log(results);
+                    if(err){
+                        console.log(err);
+                        
+                        return;
+                    }
+                    
+            });
+};
+
+mushrecord.getUsers = function(callback){
+    var sql = 'select username,mailaddress,maildanger,mailwarning,level from Users;';
+    db.query(sql,[],function(err,results){
+            db.end();
+            if(err){
+                    console.log(err);
+                    callback(new Error('select failed.'));
+                    return;
+            } 
+            callback(err,results);
+    });
+};
+
+mushrecord.updateUsers = function(params){
+    
+};
+
+mushrecord.readDevice = function(callback){
+    var sql = 'select lineid,lineno from observationDevice;';
+    db.query(sql,[],function(err,results){
+            db.end();
+            if(err){
+                    console.log(err);
+                    callback(new Error('select failed.'));
+                    return;
+            } 
+            callback(err,results);
+    });
+};
+
+//デバイスの設定情報を更新する
+mushrecord.updateDevice = function(lineid,lineno,params){
+    var param = [
+           params.celsius_top_range,
+           params.celsius_bottom_range,
+           params.humidity_top_range,
+           params.humidity_bottom_range,
+           params.celsius_top_range_over,
+           params.celsius_bottom_range_over,
+           params.humidity_top_range_over,
+           params.humidity_bottom_range_over
+        ];
+        console.log(param);
+        db.query(
+                'UPDATE observationDevice SET '
+                + 'celsius_top_range = ?,'
+                + 'celsius_bottom_range = ?,'
+                + 'humidity_top_range = ?,'
+                + 'humidity_bottom_range = ?,'
+                + 'celsius_top_range_over = ?,'
+                + 'celsius_bottom_range_over = ?,'
+                + 'humidity_top_range_over = ?,'
+                + 'humidity_bottom_range_over = ?'
+                + 'where '
+                + 'lineid = ' + lineid + ' and '
+                + 'lineno = ' + lineno + ';',
+            param,
+            function(err,results){
+                    db.end();
+                    //console.log(results);
+                    if(err){
+                        console.log(err);
+                        return;
+                    }   
+            });
+};
+
+mushrecord.setTimeSchedule = function(params,callback){
+    var tblname = 'timeSchedule' + params.relaySelect;
+    if(params.relaySelect !== '0'){
+            sql = 'INSERT INTO ' + tblname + '('
+            + 'lineid,lineno,start_date,end_date,top_range,bottom_range,top_range_over,bottom_range_over '
+            + ') VALUES ('
+            + '?,?,?,?,?,?,?,?'
+            + ');';
+            db.query(sql,[
+                params.lineid,
+                params.lineno,
+                params.start,
+                params.end,
+                params.rangeMin,
+                params.rangeMax,
+                params.topRangeOver,
+                params.bottomRangeOver,
+                
+            ],function(err,res){
+                    db.end();
+                    if(err){
+                        callback(new Error('Insert failed.[setTimeSchedule]'));
+                    }
+                    callback(null);
+            });
+    } else {
+        callback(new Error('relay No to 0.[setTimeSchedule]'));
+    }   
+};
+
+mushrecord.getTimeSchedule = function(params,callback){
+    var sql = 'select * from timeSchedule'+params.relaySelect+' where lineid = ? and lineno = ?;';
+    db.query(sql,[params.lineid,params.lineno],function(err,results){
+            db.end();
+            if(err){
+                    console.log(err);
+                    callback(new Error('select failed.'));
+                    return;
+            } 
+            callback(err,results);
+    });    
+};
