@@ -334,6 +334,58 @@ exports.getTimeSchedule = function(req,res){
         });
 };
 
+exports.deleteTimeSchedule = function(req,res){
+    var params = {
+        relaySelect:req.body.relaySelect,
+        lineid:req.body.lineid,
+        lineno:req.body.lineno,
+        start_date:req.body.start_date,
+        end_date:req.body.end_date
+    };
+    if(checkNum(params)){
+            db_mushrecord.deleteTimeSchedule(params,function(err){
+                        var restr = 'Success';
+                        if(err){
+                            console.log(err);
+                            restr = 'Error'; 
+                        }
+                        res.json(200,{'respons':restr});
+                        return;
+                    }); 
+    } else {
+         res.json(200,{'respons':'Error'});
+         return;   
+    }
+};
+
+exports.updateTimeSchedule = function(req,res){
+    var params = {
+        relaySelect:req.body.relaySelect,
+        lineid:req.body.lineid,
+        lineno:req.body.lineno,
+        start_date:req.body.start_date,
+        end_date:req.body.end_date,
+        top_range:req.body.top_range,
+        bottom_range:req.body.bottom_range,
+        top_range_over:req.body.top_range_over,
+        bottom_range_over:req.body.bottom_range_over
+    };
+    if(checkNum(params)){
+            db_mushrecord.updateTimeSchedule(params,function(err){
+                        var restr = 'Success';
+                        if(err){
+                            console.log(err);
+                            restr = 'Error'; 
+                        }
+                        res.json(200,{'respons':restr});
+                        return;
+                    }); 
+    } else {
+         res.json(200,{'respons':'Error'});
+         return;   
+    }
+};
+
 //SESでメールを送信する
 exports.sendmail = function(req,res){
         var AWSES = require('aws-sdk');
@@ -415,3 +467,17 @@ exports.getLog = function(req,res){
 exports.wsgate = function(req,res){
     
 };
+
+//数値判定 数値ならtrueを返す
+function checkNum(obj){
+var keys = Object.keys(obj);
+var flg = true;
+var n;
+for(var i=0; i<keys.length; i++){
+    n = obj[keys[i]];
+    if (!( n.replace(/[ 　]/g, '') != '' && !isNaN(n) )) {
+        flg = false;
+    }
+}
+return flg;
+}

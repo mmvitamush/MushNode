@@ -163,6 +163,8 @@ app.post(﻿'/api/getlog',routes.getLog);
 app.post('/api/changesetting',routes.changesetting);
 app.post('/api/getsetting',routes.getsetting);
 app.post('/api/getTimeSchedule',routes.getTimeSchedule);
+app.post('/api/deleteTimeSchedule',routes.deleteTimeSchedule);
+app.post('/api/updateTimeSchedule',routes.updateTimeSchedule);
 app.post('/api/getS3Photo',routes.getS3Photo);
 app.post('/api/getUsers',routes.getUsers);
 app.post('/mail/send',routes.sendmail);

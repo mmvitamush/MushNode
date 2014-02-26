@@ -1,56 +1,115 @@
 extends newlayout
 append css
     link(rel='stylesheet',href='/stylesheets/iThing.css')
+    link(rel='stylesheet',href='/javascripts/fullcalendar-1.6.4/fullcalendar/fullcalendar.css')
     link(rel='stylesheet',href='/stylesheets/schedule.css')
 append script
     script(src='/socket.io/socket.io.js')
     script(src='/javascripts/jQAllRangeSliders-min.js')
+    script(src='/javascripts/fullcalendar-1.6.4/fullcalendar/fullcalendar.js')
     script(src='/javascripts/schedule.js')
 block content
  #maincontainer
     - var name = lineParams.lineid + ':' + lineParams.lineno;
     .page-header
-        h4(style='margin-left:15px;') ライン#{name}
-    .row
-        .col-md-3
-                .col-md-12
-                    select.form-control#RelaySelector
-                        option(value='0') --- 選択 ---
-                        option(value='1') リレー１ : 温度
-                        option(value='2') リレー２ : 湿度
-                        option(value='3') リレー３ : 換気
-                        option(value='4') リレー４ : 日照
-                .col-md-12(style='margin-top:15px;')
-                    h4#RelayLabel 制御機器
-                    #range1.range-celsius
+        h4(style='margin-left:15px;') ライン#{name}スケジュール
+    .row(style="margin:0 !important;")
+        .col-md-3(style="margin-bottom:15px;")
+            .panel.panel-default
+                .panel-heading 登録フォーム
+                .panel-body
+                        .col-md-12
+                            select.form-control#RelaySelector
+                                option(value='0') --- 選択 ---
+                                option(value='1') リレー１ : 温度
+                                option(value='2') リレー２ : 湿度
+                                option(value='3') リレー３ : 換気
+                                option(value='4') リレー４ : 日照
+                        .col-md-12(style='margin-top:15px;')
+                            h4#RelayLabel 制御機器
+                            #range1.range-celsius
 
-                .col-md-12
-                    p 上限到達時
-                        label
-                             input.celsiusTopRangeRadio(type='radio',name='TopRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.celsiusTopRangeRadio(type='radio',name='TopRange',value='1')
-                             | ON
-                    p 下限到達時
-                        label
-                             input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='1')
-                             | ON
+                        .col-md-12
+                            p 上限到達時
+                                label
+                                     input.celsiusTopRangeRadio(type='radio',name='TopRange',value='0',checked='checked')
+                                     | OFF
+                                label
+                                     input.celsiusTopRangeRadio(type='radio',name='TopRange',value='1')
+                                     | ON
+                            p 下限到達時
+                                label
+                                     input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='0',checked='checked')
+                                     | OFF
+                                label
+                                     input.celsiusBottomRangeRadio(type='radio',name='BottomRange',value='1')
+                                     | ON
 
-                .col-md-12(style='margin-bottom:20px;')
-                  .row
-                    .col-lg-12(style='margin-bottom:20px;')
-                        .input-group
-                            span.input-group-addon 開始日時
-                            input#datetimepicker1.form-control(type='text',placeholder='ex) 20140101',name='eventStart')
-                    .col-lg-12       
-                        .input-group
-                            span.input-group-addon 終了日時
-                            input#datetimepicker2.form-control(type='text',placeholder='ex) 20141229',name='eventEnd')
-                .col-md-12
-                    button#setBtn.btn.btn-block.btn-primary 設定登録
-        .col-md-6            
-            button#schedulegetBtn(type='button') Schedule GET
+                        .col-md-12(style='margin-bottom:20px;')
+                          .row
+                            .col-lg-12(style='margin-bottom:20px;')
+                                .input-group
+                                    span.input-group-addon 開始日時
+                                    input#datetimepicker1.form-control(type='text',placeholder='ex) 20140101',name='eventStart')
+                            .col-lg-12       
+                                .input-group
+                                    span.input-group-addon 終了日時
+                                    input#datetimepicker2.form-control(type='text',placeholder='ex) 20141229',name='eventEnd')
+                        .col-md-12
+                            button#setBtn.btn.btn-block.btn-primary 設定登録
+        .col-md-5(style="margin-bottom:15px;")            
+            #calendar1
+        .col-md-4(style="margin-bottom:15px;")
+            .panel.panel-default
+                .panel-heading 登録済みスケジュール一覧
+                .panel-body#schedulePanel(style="height:455px; overflow:auto;")
+                    table.table.table-hover
+                        thead
+                            th 開始日時 <br /> 終了日時
+                            th 上限 <br /> 到達時
+                            th 下限 <br /> 到達時
+                            th 編集
+                            th 削除
+                        tbody#scheduleTable
+                   
+   #dialog-confirm(style="display:none;")
+        #delete-dialog-content
+   #dialog-loading(style="display:none;")
+        #loading-dialog-content
+            img(src="/images/load.gif")
+   #dialog-edit(style="display:none;")
+        #edit-dialog-content
+            input(type="hidden",name="target_id",value="0")
+            input(type="hidden",name="edit_start_date",value="")
+            input(type="hidden",name="edit_end_date",value="")
+            .row
+                        .col-md-12(style='margin-top:15px;')
+                            #editrange1.range-celsius
+                        .col-md-12
+                            p 上限到達時
+                                label
+                                     input.celsiusTopRangeRadio(type='radio',name='editTopRange',value='0',checked='checked')
+                                     | OFF
+                                label
+                                     input.celsiusTopRangeRadio(type='radio',name='editTopRange',value='1')
+                                     | ON
+                            p 下限到達時
+                                label
+                                     input.celsiusBottomRangeRadio(type='radio',name='editBottomRange',value='0',checked='checked')
+                                     | OFF
+                                label
+                                     input.celsiusBottomRangeRadio(type='radio',name='editBottomRange',value='1')
+                                     | ON
+
+                        .col-md-12(style='margin-bottom:20px;')
+                          .row
+                            .col-lg-12(style='margin-bottom:20px;')
+                                .input-group
+                                    span.input-group-addon 開始日時
+                                    input#editdatetimepicker1.form-control(type='text',placeholder='ex) 20140101',name='editeventStart')
+                            .col-lg-12       
+                                .input-group
+                                    span.input-group-addon 終了日時
+                                    input#editdatetimepicker2.form-control(type='text',placeholder='ex) 20141229',name='editeventEnd')
+                        .col-md-12
+                            button#editsetBtn.btn.btn-danger 編集登録

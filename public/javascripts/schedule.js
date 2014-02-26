@@ -1,4 +1,6 @@
 var lineid,lineno;
+var calEvent = [];
+var calendarid = 0;
 $(document).ready(function(){
     var url = document.URL;
     lineid = url.split('/')[4];
@@ -13,11 +15,23 @@ $(document).ready(function(){
    });
    $('#RelaySelector').on('change',function(){
        if($('#RelaySelector option:selected').val() !== '0'){
-           $('#RelayLabel').html($('#RelaySelector option:selected').text().substr(7,2));
+           var setData = {
+                lineid:lineid,
+                lineno:lineno,
+                relaySelect:$('#RelaySelector option:selected').val()
+            };
+           var rep = ajaxLoading('http://www.vita-factory.com/api/getTimeSchedule','post','json',setData);
+           //カレンダーイベントデータの初期化
+           calEvent.length = 0;
+           $('#calendar1').fullCalendar('removeEvents');
+           $('#scheduleTable').empty();
+           addScheduleData(rep);
+           $('#RelayLabel').html($('#RelaySelector option:selected').text().substr(7,2));    
        }else{
            $('#RelayLabel').html('選択してください');
        }
    });
+   
    
 });
 
@@ -39,6 +53,22 @@ $(function(){
                   dateFormat:'yy/mm/dd'
         });
         
+   $('#editdatetimepicker1').datetimepicker({
+	addSliderAccess: true,
+	sliderAccessArgs: { touchonly: false },
+	changeMonth: false,
+	changeYear: false,
+                  dateFormat:'yy/mm/dd'
+        });
+        
+   $('#editdatetimepicker2').datetimepicker({
+	addSliderAccess: true,
+	sliderAccessArgs: { touchonly: false },
+	changeMonth: false,
+	changeYear: false,
+                  dateFormat:'yy/mm/dd'
+        });
+        
    $('#setBtn').click(function(){
        var setData = {
            lineid:lineid,
@@ -52,25 +82,318 @@ $(function(){
            end:Math.round((new Date($('#datetimepicker2').val())).getTime()/1000)
        };
        var rep = ajaxLoading('http://www.vita-factory.com/api/changesetting','post','json',setData);
-       console.log(rep);
-   });
-   
-   $('#schedulegetBtn').click(function(){
-       var setData = {
-           lineid:lineid,
-           lineno:lineno,
-           relaySelect:$('#RelaySelector option:selected').val()
-       };
-       if($('#RelaySelector option:selected').val() !== '0'){
-            var rep = ajaxLoading('http://www.vita-factory.com/api/getTimeSchedule','post','json',setData);
-            console.log(rep);
+       if(rep.respons === "changeSetting Success."){
+           var rep = [{
+               start_date:Math.round((new Date($('#datetimepicker1').val())).getTime()/1000),
+               end_date:Math.round((new Date($('#datetimepicker2').val())).getTime()/1000),
+               top_range:$('#range1').rangeSlider("max"),
+               top_range_over:$('[name=TopRange]:checked').val(),
+               bottom_range:$('#range1').rangeSlider("min"),
+               bottom_range_over:$('[name=BottomRange]:checked').val()
+           }];
+           //カレンダーイベントデータの初期化
+           calEvent.length = 0;
+           addScheduleData(rep);
+       }else{
+           window.alert('設定変更失敗.管理者に問い合わせてください');
        }
    });
+   
+   //編集ダイアログ内の登録ボタン
+   $('#editsetBtn').click(function(){
+       $('#dialog-edit').dialog("close");
+       //イベントの再セット
+       resetCalendarEvent();
+   });
+   
+   var calendar = $('#calendar1').fullCalendar({
+            header: {
+               left:'prev,next,today',
+               center:'title',
+               right:'month agendaWeek agendaDay'
+            },
+            theme:false,
+            //weekends:true,
+            defaultView:'month',
+            slotMinutes:15,
+            snapMinutes:15,
+            firstHour:0,
+            minTime:0,
+            maxTime:24,
+            selectable:true,
+            selectHelper:true,
+            editable:false,
+            allDayDefault:false,
+            slotEventOverlap:true,
+            eventRender:function(event,element){
+                    element.find('span.fc-event-title').html(element.find('span.fc-event-title').text());
+            },
+            eventMouseover:function(calEvent,jsEvent){
+                $('body').prepend(calEvent.tooltip);
+                xOffset = 60 + $('#tooltip').height();
+                yOffset = -40;
+                $('#tooltip')
+                .css('top', (jsEvent.clientY - xOffset) + 'px')
+                .css('left', (jsEvent.clientX + yOffset) + 'px')
+                .fadeIn();
+            },
+            eventMouseout:function(calEvent,jsEvent){
+                $('#tooltip').remove();
+            },
+            eventClick: function(calEvent, jsEvent, view) {
+                $('#scheduleTable > tr').css("background","#FFF");
+                $('#scheduletr'+calEvent.id).css("background","#DDD");
+                //var position = $('#scheduletr'+calEvent.id).offset().top;
+                var baseposition = $('#scheduletr1').position().top;
+                var targetposition = $('#scheduletr'+calEvent.id).position().top;
+                $('#schedulePanel').animate({scrollTop:targetposition - baseposition},
+                {
+                    duration:400,
+                    easing:"swing"
+                });
+            },
+            dayClick: function(date, allDay, jsEvent, view) {
+                $('#scheduleTable > tr').css("background","#FFF");
+            }
+   });
+   
 });
 
 $(window).load(function(){
     
 });
+
+//登録済みスケジュール一覧を動的に作成
+function addScheduleData(rep) {
+    var doc = $('#scheduleTable');
+    for(var i = 0; i<rep.length; i++){
+        /* カレンダーにイベント情報を追加する */
+        createCalendarEvent(rep[i]);
+        /* 登録済みスケジュール一覧テーブルを生成 */
+        doc.append(
+            $('<tr id="scheduletr'+calendarid+'" />')
+                            .append($('<td />').html(computeDuration(rep[i].start_date)+'<br />'+computeDuration(rep[i].end_date)))
+                            .append($('<td />').html(rep[i].top_range+'<br />'+chkOver(rep[i].top_range_over)))
+                            .append($('<td  />').html(rep[i].bottom_range+'<br />'+chkOver(rep[i].bottom_range_over)))
+                            .append($('<td ><button id="editbtn'+calendarid+'" class="btn btn-success"><span class="glyphicon glyphicon-pencil"></span></button></td>'))
+                            .append($('<td ><button id="removebtn'+calendarid+'" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span></button></td>'))
+                            .append($('<input type="hidden" name="start_date" value="'+rep[i].start_date+'" />'))
+                            .append($('<input type="hidden" name="end_date" value="'+rep[i].end_date+'" />'))
+                            .append($('<input type="hidden" name="top_range" value="'+rep[i].top_range+'" />'))
+                            .append($('<input type="hidden" name="bottom_range" value="'+rep[i].bottom_range+'" />'))
+                            .append($('<input type="hidden" name="calendar_id" value="'+calendarid+'" />'))
+                            .append($('<input type="hidden" name="top_range_over" value="'+rep[i].top_range_over+'" />'))
+                            .append($('<input type="hidden" name="bottom_range_over" value="'+rep[i].bottom_range_over+'" />'))
+        );
+        /* 編集ボタン */
+        $('#editbtn'+calendarid).on('click',function(){
+                var elm = $(this).closest('tr');
+                $('#dialog-edit').dialog({
+                    resizable:false,
+                    width:500,
+                    height:450,
+                    modal:true,
+                    title:"スケジュール編集",
+                    open:function(event, ui){ 
+                        $(".ui-dialog-titlebar-close").hide();
+                               $('#editrange1').rangeSlider({
+                                bounds:{min: 0, max: 100},
+                                defaultValues:{min:0,max:10},
+                                arrows:false,
+                                step:1
+                            });
+                            $('#editrange1').rangeSlider("values", elm.find("[name=bottom_range]").val(), elm.find("[name=top_range]").val());
+                            $('#editdatetimepicker1').val(computeDuration(elm.find("[name=start_date]").val()));
+                            $('#editdatetimepicker2').val(computeDuration(elm.find("[name=end_date]").val()));
+                            $('#edit-dialog-content input[name="editTopRange"]').val([elm.find("[name=top_range_over]").val()]);
+                            $('#edit-dialog-content input[name="editBottomRange"]').val([elm.find("[name=bottom_range_over]").val()]);
+                            $('#editdatetimepicker1').attr('disabled', true);
+                            $('#editdatetimepicker2').attr('disabled', true);
+                            $('#edit-dialog-content > input[name=target_id]').val(elm.find("[name=calendar_id]").val());
+                            $('#edit-dialog-content > input[name=edit_start_date]').val(elm.find("[name=start_date]").val());
+                            $('#edit-dialog-content > input[name=edit_end_date]').val(elm.find("[name=end_date]").val());
+                    },
+                    buttons:{
+                        "キャンセル":function(){
+                            $(this).dialog("close");
+                        }
+                    },
+                    close : function(){
+                        $('#editdatetimepicker1').removeAttr("disabled");
+                        $('#editdatetimepicker1').removeAttr("disabled");
+                    }
+                });
+        });
+        /* 削除ボタン */
+        $('#removebtn'+calendarid).on('click',function(){
+                var elm = $(this).closest('tr');
+                $('#dialog-confirm').dialog({
+                    resizable:false,
+                    width:500,
+                    height:400,
+                    modal:true,
+                    title:"削除確認",
+                    open:function(event, ui){ 
+                        $(".ui-dialog-titlebar-close").hide();
+                        $('#delete-dialog-content').empty();
+                        $('#delete-dialog-content')
+                                .append($('<p />').text('ライン:'+lineid+'-'+lineno))
+                                .append($('<p />').text('開始日時: '+computeDuration(elm.find("[name=start_date]").val())))
+                                .append($('<p />').text('終了日時: '+computeDuration(elm.find("[name=end_date]").val())))
+                                .append($('<p />').text('上限 : '+elm.find("[name=top_range]").val()))
+                                .append($('<p />').text('下限 : '+elm.find("[name=bottom_range]").val()));
+                    },
+                    buttons:{
+                        "削除する":function(){
+                            $(this).dialog("close");
+                            $('#dialog-loading').dialog({
+                                    resizable:false,
+                                    modal:true,
+                                    width:250,
+                                    height:250,
+                                    draggable: false,
+                                    title:"しばらくお待ちください",
+                                    open:function(ev,ui){
+                                        $(".ui-dialog-titlebar-close").hide();
+                                        /* ajaxでサーバーに削除命令を送信 */
+                                        var postData = {
+                                            relaySelect:$('#RelaySelector option:selected').val(),
+                                            lineid:lineid,
+                                            lineno:lineno,
+                                            start_date:elm.find("[name=start_date]").val(),
+                                            end_date:elm.find("[name=end_date]").val()
+                                        };
+                                 
+                                        var rep = ajaxLoading('http://www.vita-factory.com/api/deleteTimeSchedule','post','json',postData);
+                                        if(rep.respons === "Success"){
+                                            $(this).dialog("close");
+                                            elm.fadeOut( 500, function(){$(this).remove();});
+                                            $('#calendar1').fullCalendar('removeEvents',elm.find("[name=calendar_id]").val());
+                                        }else{
+                                            $(this).dialog("close");
+                                            window.alert('削除に失敗しました');
+                                        }
+                                        
+                                    }
+                            });
+                        },
+                        "キャンセル":function(){
+                            $(this).dialog("close");
+                        }
+                    },
+                    close : function(){
+                        //$(this).dialog("destory").remove();
+                    }
+                });
+        });
+  
+    }
+    
+    if(calEvent.length > 0){
+        $('#calendar1').fullCalendar('addEventSource',calEvent);
+    }
+};
+
+//FullCalendar用EventObjectを作成
+function createCalendarEvent(params){
+    calendarid++;//カレンダーのid用カウンタ
+    var event = {
+        id:calendarid,
+        title:'上限: '+params.top_range+' 下限: '+params.bottom_range,
+        start:params.start_date,
+        end:params.end_date,
+        allDay:false,
+        'tooltip':createTooltipElement(params)
+    };
+    calEvent.push(event);
+    //$('#calendar1').fullCalendar('renderEvent',event);
+};
+
+//イベント編集後のイベント情報書き換え
+function resetCalendarEvent(){
+    var obj = {
+          id:$('#edit-dialog-content > input[name=target_id]').val(),
+          top_range:$('#editrange1').rangeSlider("max"),
+          bottom_range:$('#editrange1').rangeSlider("min"),
+          start_date:$('#edit-dialog-content > input[name=edit_start_date]').val(),
+          end_date:$('#edit-dialog-content > input[name=edit_end_date]').val(),
+          top_range_over:$('#edit-dialog-content  input[name="editTopRange"]:checked').val(),
+          bottom_range_over:$('#edit-dialog-content  input[name="editBottomRange"]:checked').val()
+       };
+       
+       //編集データをサーバに送り更新する
+                            $('#dialog-loading').dialog({
+                                    resizable:false,
+                                    modal:true,
+                                    width:250,
+                                    height:250,
+                                    draggable: false,
+                                    title:"しばらくお待ちください",
+                                    open:function(ev,ui){
+                                        $(".ui-dialog-titlebar-close").hide();
+                                        /* ajaxでサーバーに削除命令を送信 */
+                                        var postData = {
+                                            relaySelect:$('#RelaySelector option:selected').val(),
+                                            lineid:lineid,
+                                            lineno:lineno,
+                                            start_date:obj.start_date,
+                                            end_date:obj.end_date,
+                                            top_range:obj.top_range,
+                                            bottom_range:obj.bottom_range,
+                                            top_range_over:obj.top_range_over,
+                                            bottom_range_over:obj.bottom_range_over
+                                        };
+                                 
+                                        var rep = ajaxLoading('http://www.vita-factory.com/api/updateTimeSchedule','post','json',postData);
+                                        if(rep.respons === "Success"){
+                                            $(this).dialog("close");
+                                            var elm = $('#scheduletr'+obj.id);
+                                            elm.find('td').eq(1).html(obj.top_range+'<br>'+chkOver(obj.top_range_over));
+                                            elm.find('td').eq(2).html(obj.bottom_range+'<br>'+chkOver(obj.bottom_range_over));
+                                            //hiddenを更新する
+                                            elm.children('[name=top_range]').val(obj.top_range);
+                                            elm.children('[name=bottom_range]').val(obj.bottom_range);
+                                            elm.children('[name=top_range]').val(obj.top_range);
+                                            elm.children('[name=top_range_over]').val(obj.top_range_over);
+                                            elm.children('[name=bottom_range_over]').val(obj.bottom_range_over);
+                                            var event = [{
+                                                 id:obj.id,
+                                                 title:'上限: '+obj.top_range+' 下限: '+obj.bottom_range,
+                                                 start:obj.start_date,
+                                                 end:obj.end_date,
+                                                 allDay:false,
+                                                 'tooltip':createTooltipElement(obj)
+                                            }];
+                                            $('#calendar1').fullCalendar('removeEvents',obj.id);
+                                            $('#calendar1').fullCalendar('addEventSource',event);  
+                                        }else{
+                                            $(this).dialog("close");
+                                            window.alert('スケジュール更新に失敗しました');
+                                        }
+                                        
+                                    }
+                            });    
+    
+};
+
+function createTooltipElement(dt){
+    var doc = $('<div id="tooltip" />')
+            .append($('<p />').text('開始日時: '+computeDuration(dt.start_date)))
+            .append($('<p />').text('終了日時: '+computeDuration(dt.end_date)))
+            .append($('<p />').text('上限: '+dt.top_range))
+            .append($('<p />').text('上限到達時: '+chkOver(dt.top_range_over)))
+            .append($('<p />').text('下限: '+dt.bottom_range))
+            .append($('<p />').text('下限到達時: '+chkOver(dt.bottom_range_over)));
+    return doc;
+};
+
+function chkOver(flg){
+    if(parseInt(flg) === 0){
+        return "OFF";
+    } else {
+        return "ON"; 
+    }
+};
 
 function setUserlist(rep) {
     var chk = ['','checked'];
@@ -175,8 +498,8 @@ function computeDuration(ms){
     //var data = new Date(ms-32400000);
     var data = new Date(ms*1000);
     var Y = data.getFullYear();
-    var M = data.getMonth()+1;
-    var D = data.getDate();
+    var M = toDoubleDigits(data.getMonth()+1);
+    var D = toDoubleDigits(data.getDate());
     var hh = toDoubleDigits(data.getHours());
     var mm = toDoubleDigits(data.getMinutes());
     var ss = toDoubleDigits(data.getSeconds());

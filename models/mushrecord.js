@@ -140,8 +140,8 @@ mushrecord.setTimeSchedule = function(params,callback){
                 params.lineno,
                 params.start,
                 params.end,
-                params.rangeMin,
                 params.rangeMax,
+                params.rangeMin,
                 params.topRangeOver,
                 params.bottomRangeOver,
                 
@@ -168,4 +168,50 @@ mushrecord.getTimeSchedule = function(params,callback){
             } 
             callback(err,results);
     });    
+};
+
+mushrecord.deleteTimeSchedule = function(params,callback){
+    var tblname = 'timeSchedule' + params.relaySelect;
+    if(params.relaySelect !== '0'){
+            var sql = "delete from "+tblname+" where lineid=? and lineno = ? and start_date = ? and end_date = ?;";
+            db.query(sql,[
+                params.lineid,
+                params.lineno,
+                params.start_date,
+                params.end_date
+            ],function(err,res){
+                    db.end();
+                    if(err){
+                        callback(new Error('delete failed.[deleteTimeSchedule]'));
+                    }
+                    callback(null);
+            });
+    } else {
+        callback(new Error('relay No to 0.[deleteTimeSchedule]'));
+    }       
+};
+
+mushrecord.updateTimeSchedule = function(params,callback){
+    var tblname = 'timeSchedule' + params.relaySelect;
+    if(params.relaySelect !== '0'){
+            var sql = "update "+tblname+" set top_range=?,bottom_range=?,top_range_over=?,bottom_range_over=? where lineid=? and lineno = ? and start_date = ? and end_date = ?;";
+            db.query(sql,[
+                params.top_range,
+                params.bottom_range,
+                params.top_range_over,
+                params.bottom_range_over,
+                params.lineid,
+                params.lineno,
+                params.start_date,
+                params.end_date
+            ],function(err,res){
+                    db.end();
+                    if(err){
+                        callback(new Error('delete failed.[deleteTimeSchedule]'));
+                    }
+                    callback(null);
+            });
+    } else {
+        callback(new Error('relay No to 0.[deleteTimeSchedule]'));
+    }       
 };
