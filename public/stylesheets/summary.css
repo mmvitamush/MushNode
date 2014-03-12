@@ -252,7 +252,7 @@ top: 47px;
     text-align:center;
     font-size:30px;
     //margin-left: 30px;
-    margin-top: -142px;
+    margin-top: -167px;
 }
 /*
 .stremWrap > span {position:absolute;}
@@ -272,10 +272,11 @@ top: 47px;
 }
 */
 .labelWrap {
-    margin-left: 49px;
-    margin-top: -43px;
+    text-align:center;
+    margin-left: 69px;
+    margin-top: -55px;
     position: absolute;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .dial1Wrap{
@@ -341,11 +342,11 @@ label {
 }
 
 .checkbox-inline {
-    margin:10px !important;
+    margin:8px !important;
     border-radius:3px;
     background:#FFF;
     border:1px solid #DDD;
-    padding:7px 20px 7px 30px;
+    padding:7px 14px 7px 24px;
 }
 
 .control-label{

@@ -93,8 +93,9 @@ html(lang='ja')
            | 設定
   
   #maincontainer
+      - var name = lineParams.lineid + ':' + lineParams.lineno;
       .page-header
-            h4 ライン1
+            h4(style='margin-left:15px;') ライン#{name}レコード
             .infodiv
                             p#info_p.navbar-text.c_p
                               span.glyphicon.glyphicon-info-sign
@@ -102,65 +103,41 @@ html(lang='ja')
                             .progress.progress-striped.active.c_progress
                                 #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
                         
-      .row
+      .row(style="height:300px;")
         .col-lg-3
             .dial2Wrap
                 input#dial1(type='text',data-width='240',data-height='240',data-linecap='round')
         .col-lg-3
             .dial2Wrap
                 input#dial2(type='text',data-width='240',data-height='240',data-linecap='round')
-        .col-lg-6
-            .row
-                .col-md-6
-                    h4 温度設定
-                    span.warning-span Warning
-                    span.slider-span 00
-                    #slider1.celsius-ui-widget
-                .col-md-6
-                    h4 湿度設定
-                    span.warning-span Warning
-                    span.slider-span 00
-                    #slider2.humidity-ui-widget
-                .col-md-6
-                    h4 温度上限・下限
-                    span.warning-span Warning
-                    #range1.range-celsius
-                .col-md-6
-                    h4 湿度下限・下限
-                    span.warning-span Warning
-                    #range2.range-humidity
-                .col-md-6
-                    p 上限到達時
-                        label
-                             input.celsiusTopRangeRadio(type='radio',name='celsiusTopRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.celsiusTopRangeRadio(type='radio',name='celsiusTopRange',value='1')
-                             | 冷却
-                    p 下限到達時
-                        label
-                             input.celsiusBottomRangeRadio(type='radio',name='celsiusBottomRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.celsiusBottomRangeRadio(type='radio',name='celsiusBottomRange',value='1')
-                             | 暖房
-                .col-md-6
-                    p 上限到達時
-                        label
-                             input.humidityTopRangeRadio(type='radio',name='humidityTopRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.humidityTopRangeRadio(type='radio',name='humidityTopRange',value='1')
-                             | 除湿
-                    p 下限到達時
-                        label
-                             input.humidityBottomRangeRadio(type='radio',name='humidityBottomRange',value='0',checked='checked')
-                             | OFF
-                        label
-                             input.humidityBottomRangeRadio(type='radio',name='humidityBottomRange',value='1')
-                             | 加湿   
-                .col-md-12
-                    button#sliderBtn.btn.btn-block.btn-primary 設定送信
+        .col-lg-3
+            .dial2Wrap
+                input#dial3(type='text',data-width='240',data-height='240',data-linecap='round')
+        .col-lg-3
+            .dial2Wrap
+                input#dial4(type='text',data-width='240',data-height='240',data-linecap='round')       
+      .row          
+        .col-lg-12
+            .panel.panel-default.panel-c
+                .panel-heading リアルタイムログ
+                .panel-body 
+                    table#line1logTable.table
+                        thead
+                            tr
+                                th 日時
+                                th 温度
+                                th 設定範囲
+                                th リレー
+                                th 湿度
+                                th 設定範囲
+                                th リレー
+                                th 換気
+                                th 設定範囲
+                                th リレー
+                                th CO2
+                                th 設定C範囲
+                                th リレー
+                        tbody              
                       
       .row(style='background:#EEE; padding:10px; margin-top:20px;')
         .col-lg-12
@@ -169,12 +146,16 @@ html(lang='ja')
                         label.control-label 表示項目
                         label.checkbox-inline.addBackground: input#inlineCheckbox1(type='checkbox',name='celsData',checked='checked')
                         label.checkbox-inline.addBackground: input#inlineCheckbox2(type='checkbox',name='humdData',checked='checked')
-                        label.checkbox-inline.addBackground: input#inlineCheckbox3(type='checkbox',name='setcelsius',checked='checked')
-                        label.checkbox-inline.addBackground: input#inlineCheckbox4(type='checkbox',name='sethumidity',checked='checked')
-                        label.checkbox-inline: input#inlineCheckbox5(type='checkbox',name='celsiusup')
-                        label.checkbox-inline: input#inlineCheckbox6(type='checkbox',name='celsiusdw')
-                        label.checkbox-inline: input#inlineCheckbox7(type='checkbox',name='humidityup')
-                        label.checkbox-inline: input#inlineCheckbox8(type='checkbox',name='humiditydw')   
+                        label.checkbox-inline: input#inlineCheckbox3(type='checkbox',name='ventData')
+                        label.checkbox-inline: input#inlineCheckbox4(type='checkbox',name='co2Data')
+                        label.checkbox-inline: input#inlineCheckbox5(type='checkbox',name='setcelsius')
+                        label.checkbox-inline: input#inlineCheckbox6(type='checkbox',name='sethumidity')
+                        label.checkbox-inline: input#inlineCheckbox7(type='checkbox',name='setventilation')
+                        label.checkbox-inline: input#inlineCheckbox8(type='checkbox',name='setco2')   
+                        label.checkbox-inline: input#inlineCheckbox9(type='checkbox',name='celsiusup')  
+                        label.checkbox-inline: input#inlineCheckbox10(type='checkbox',name='humidityup')  
+                        label.checkbox-inline: input#inlineCheckbox11(type='checkbox',name='ventilationdw')
+                        label.checkbox-inline: input#inlineCheckbox12(type='checkbox',name='co2dw')
       .row#dateSelector   
         .col-lg-offset-4
         .col-lg-3
@@ -190,7 +171,7 @@ html(lang='ja')
         .col-lg-1
             button#realtimeBtn.btn.btn-primary(type='button') リアルタイム
       .row
-        .col-lg-5(style='padding:0 10px !important;')
+        .col-lg-12(style='padding:0 10px !important;')
             .panel.panel-default.panel-c
                 .panel-heading 指定レコードログ
                 .panel-body
@@ -198,22 +179,19 @@ html(lang='ja')
                         thead
                             th 日時
                             th 温度
-                            th 設定温度
+                            th 設定範囲
+                            th リレー
                             th 湿度
-                            th 設定湿度
+                            th 設定範囲
+                            th リレー
+                            th 換気
+                            th 設定範囲
+                            th リレー
+                            th CO2
+                            th 設定範囲
+                            th リレー
                         tbody
-        
-        .col-lg-3
-            .panel.panel-default.panel-c
-                .panel-heading リアルタイムログ
-                .panel-body 
-                    table#line1logTable.table
-                        thead
-                            tr
-                                th 日時
-                                th 温度
-                                th 湿度
-                        tbody                
+                  
 
 .modal.fade#deviceSettingModal
     .modal-dialog
@@ -222,7 +200,7 @@ html(lang='ja')
                     button.close(type='button',data-dismiss='modal',aria-hidden='true') &times;
                     h4.modal-title デバイス設定画面
              .modal-body
-
+                    button#cacheDeleteBtn.btn.btn-danger(type='button') グラフデータキャッシュ削除
 
 .modal.fade#settingModal
     .modal-dialog
@@ -281,6 +259,17 @@ html(lang='ja')
              .modal-body
                        .row
                             - for(var i = 0; i < lineLabel.length; i++) {
-                            - var str
-                                 .col-md-4.col-p15: a(href='#{lineLabel[i]}'): p #{lineLabel[i]}
+                            - var str1 = lineLabel[i].substr(0,1),str2 = lineLabel[i].substr(2,1);
+                                 .col-md-3.col-p15(id="al#{lineLabel[i]}")
+                                    .wrapAllLine1: p
+                                        a(href='/sample/#{str1}/#{str2}') ライン#{lineLabel[i]}レコード
+                                        .text_wrap
+                                            ul
+                                                li: span celsius
+                                                li: span humidity
+                                                li: span ventilation
+                                                li: span co2
+                                    .wrapAllLine2: p
+                                        a(href='/schedule/#{str1}/#{str2}'): p ライン#{lineLabel[i]}スケジュール
+                                        span bbb
                             - }

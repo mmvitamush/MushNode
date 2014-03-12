@@ -131,6 +131,20 @@ exports.summary = function(req,res){
 };
 
 exports.sample = function(req,res){
+   var lineid = Number(req.params.lineid);
+   if(isNaN(lineid)){
+       res.send(404);
+       return;
+   }
+   var lineno = Number(req.params.lineno);
+   if(isNaN(lineno)){
+       res.send(404);
+       return;
+   }
+   var lineParams = {
+      lineid:lineid,
+      lineno:lineno
+   };    
     var lineData = [];
     db_mushrecord.readDevice(function(err,results){
             if(err){
@@ -145,6 +159,7 @@ exports.sample = function(req,res){
             page:{title:'Sample Page'},
             user:req.session.user,
             lineLabel:lineData,
+            lineParams:lineParams,
             error:200
     });
      });
@@ -277,10 +292,10 @@ exports.changesetting = function(req,res){
         lineid:req.body.lineid,
         lineno:req.body.lineno,
         relaySelect:req.body.relaySelect,
-        rangeMin:req.body.rangeMin,
-        rangeMax:req.body.rangeMax,
-        topRangeOver:req.body.topRangeOver,
-        bottomRangeOver:req.body.bottomRangeOver,
+        bottom_range:req.body.rangeMin,
+        top_range:req.body.rangeMax,
+        top_range_over:req.body.topRangeOver,
+        bottom_range_over:req.body.bottomRangeOver,
         start:req.body.start,
         end:req.body.end
   };
@@ -288,33 +303,41 @@ exports.changesetting = function(req,res){
                 var restr = 'changeSetting Success.';
                 if(err){
                     console.log(err);
-                    restr = 'changeSetting Error.' 
-                }
+                    restr = 'changeSetting Error.'; 
+                } 
                 res.json(200,{'respons':restr});
                 return;
             }); 
 };
 
 exports.getsetting = function(req,res){
-    
-    /*
-     * Redis Ver.
-    var hashkey = 'linesetting';
-    var subkey = req.body.lineid + ':' + req.body.lineno;
-    
-    redislibs.getSettingData(hashkey,subkey,function(err,rep){
+    var key = 'linesetting:'+req.body.lineid + ':' + req.body.lineno;
+    //redislibs.trimHash({lineid:req.body.lineid,lineno:req.body.lineno});
+    redislibs.getSettingData(key,function(err,rep){
             if(err){
                 console.log(err);
                 res.send(500);
                 return;
             }
-            res.json(200,rep);
-            return;
+
+            var str1 = JSON.parse(rep.relay1),
+                  str2 = JSON.parse(rep.relay2),
+                  str3 = JSON.parse(rep.relay3),
+                  str4 = JSON.parse(rep.relay4);
+           
+           var obj = {
+                top_range1:str1.top_range,
+                bottom_range1:str1.bottom_range,
+                top_range2:str2.top_range,
+                bottom_range2:str2.bottom_range,
+                top_range3:str3.top_range,
+                bottom_range3:str3.bottom_range,
+                top_range4:str4.top_range,
+                bottom_range4:str4.bottom_range
+             };
+             res.json(200,obj);
+             return;
     });
-    */
-   
-   /* MySQL Ver. */
-   res.json(200,{'res':'ok'});
 };
 
 exports.getTimeSchedule = function(req,res){
@@ -386,6 +409,15 @@ exports.updateTimeSchedule = function(req,res){
     }
 };
 
+exports.deleteCache = function(req,res){
+    var lineid = req.body.lineid,
+          lineno = req.body.lineno;
+          redislibs.deleteRedis('linepub:'+lineid+':'+lineno);
+          redislibs.deleteRedis('linepubdate:'+lineid+':'+lineno);
+          res.json(200,{'respons':'deleteCache.'});
+          return;
+};
+
 //SESでメールを送信する
 exports.sendmail = function(req,res){
         var AWSES = require('aws-sdk');
@@ -393,17 +425,17 @@ exports.sendmail = function(req,res){
         var SES = new AWSES.SES();
         console.log(SES.endpoint);
         var params = {
-                Source:'mmbarion@gmail.com',
+                Source:'mushkk@mail-vitafactory.com',
                 Destination:{
-                    ToAddresses:['mmbarion@gmail.com'],
+                    ToAddresses:['mmbarion@gmail.com']
                 },
                 Message: {
                     Subject:{
-                        Data:'aws ses mail send test'
+                        Data:req.body.subject
                     },
                     Body: {
                         Text: {
-                            Data:'クラウドサーバーからメール送信テスト'
+                            Data:req.body.text
                         }
                     }
                 }

@@ -1,37 +1,124 @@
-var param1,param2,lineid,graphData,plot,gfd,options,targetLine;
+var param1,param2,lineid,lineno,graphData,graphData2,plot,plot2,gfd,gfd2,options,targetLine;
 var sColors = {
-   celsData:'#FE8926',
-   humdData:'#14B9D6',
-   setcelsius:'',
-   sethumidity:'',
-   celsiusup:'',
-   celsiusdw:'',
-   humidityup:'',
-   humiditydw:''
+   celsData:'#ED5D5C',
+   humdData:'#98D1CD',
+   ventData:'#FFD464',
+   co2Data:'#5133AB',
+   setcelsius:'#ffc0c0',
+   sethumidity:'#8080ff',
+   setventilation:'#FBA848',
+   setco2:'#8C0095',
+   celsiusup:'#ED5D5C',
+   humidityup:'#98D1CD',
+   ventilationdw:'#FFD464',
+   co2dw:'#5133AB'
 },
 sLabels = {
    celsData:{label:'温度'},
    humdData:{label:'湿度'},
-   setcelsius:{label:'設定温度'},
-   sethumidity:{label:'設定湿度'},
-   celsiusup:{label:'温度UP'},
-   celsiusdw:{label:'温度DW'},
-   humidityup:{label:'湿度UP'},
-   humiditydw:{label:'湿度DW'}
+   ventData:{label:'換気'},
+   co2Data:{label:'CO2'},
+   setcelsius:{label:'温度範囲'},
+   sethumidity:{label:'湿度範囲'},
+   setventilation:{label:'換気範囲'},
+   setco2:{label:'CO2範囲'},
+   celsiusup:{label:'温度リレー',markerOptions:{size:21},showLine: false},
+   humidityup:{label:'湿度リレー',markerOptions:{size:21},showLine: false},
+   ventilationdw:{label:'換気リレー',markerOptions:{size:21},showLine: false},
+   co2dw:{label:'CO2リレー',markerOptions:{size:21},showLine: false}
+};
+
+sTargets = {
+    setcelsius_top:{
+         dashedHorizontalLine: {
+                y:0,
+                lineWidth:2,
+                color:'#ED5D5C'                
+         }
+    },
+    setcelsius_bottom:{
+         dashedHorizontalLine: {
+                y:0,
+                lineWidth:2,
+                color:'#ED5D5C'                
+         }
+    },
+    sethumidity_top:{
+        dashedHorizontalLine:{
+               y:0,
+               linrWidth:2,
+               color:'#98D1CD'
+        }
+    },
+    sethumidity_bottom:{
+        dashedHorizontalLine:{
+               y:0,
+               linrWidth:2,
+               color:'#98D1CD'
+        }
+    },
+    setventilation_top:{
+        dashedHorizontalLine:{
+                y:0,
+                linrWidth:2,
+                color:'#FFD464'
+        }       
+    },
+    setventilation_bottom:{
+        dashedHorizontalLine:{
+                y:0,
+                linrWidth:2,
+                color:'#FFD464'
+        }       
+    },
+    setco2_top:{
+       dashedHorizontalLine:{
+               y:0,
+               linrWidth:2,
+               color:'#5133AB'
+       }        
+    },
+    setco2_bottom:{
+       dashedHorizontalLine:{
+               y:0,
+               linrWidth:2,
+               color:'#5133AB'
+       }        
+    }
 };
 
 //初期値のセット
-var stackColor = [sColors.celsData,sColors.humdData],
-       stackLabel = [sLabels.celsData,sLabels.humdData],
-       prevPoints = {'celsius':0,'humidity':0};
+var stackColor = [sColors.celsData,sColors.humdData,sColors.ventData,sColors.co2Data],
+       stackLabel = [sLabels.celsData,sLabels.humdData,sLabels.ventData,sLabels.co2Data],
+       prevPoints = {'celsius':0,'humidity':0,'ventilation':0,'co2':0};
+//リアルタイム用配列と選択日時配列に分割することにした
 gfd = [];
 gfd['celsData'] = [["00:00",0]];
 gfd['humdData'] = [["00:00",0]];
-graphData = [gfd['celsData'],gfd['humdData']];
-targetLine = [];
-targetLine['setcelsius'] = 0;
-targetLine['sethumidity'] = 0;
-var maxPlot = 60;
+gfd['ventData'] = [["00:00",0]];
+gfd['co2Data'] = [["00:00",0]];
+//リレー状態のためのデータ(線無し、点デカめ)
+gfd['celsiusup'] = [];
+gfd['humidityup'] = [];
+gfd['ventilationdw'] = [];
+gfd['co2dw'] = [];
+
+//選択日時用配列を定義
+gfd2 = [];
+gfd2['celsData'] = [];
+gfd2['humdData'] = [];
+gfd2['ventData'] = [];
+gfd2['co2Data'] = [];
+//リレー状態のためのデータ(線無し、点デカめ)
+gfd2['celsiusup'] = [];
+gfd2['humidityup'] = [];
+gfd2['ventilationdw'] = [];
+gfd2['co2dw'] = [];
+
+graphData = [gfd['celsData'],gfd['humdData'],gfd['ventData'],gfd['co2Data']];
+graphData2 = [gfd2['celsData'],gfd2['humdData'],gfd2['ventData'],gfd2['co2Data']];
+
+var maxPlot = 100;
 var realtime_flg = true,
       pictureShow = true,
       rangeBtnable = [];
@@ -48,7 +135,7 @@ param1 = {
         displayInput:false
     };
     
-    param2 = {
+param2 = {
         min:0,
         max:80,
         fgColor:'#98D1CD',
@@ -57,7 +144,29 @@ param1 = {
         thickness:'.1',
         readOnly:true,
         displayInput:false
-    };
+};
+
+param3 = {
+        min:0,
+        max:100,
+        fgColor:'#FFD464',
+        bgColor:'#E6E4DF',
+        inputColor:'#323A45',
+        thickness:'.1',
+        readOnly:true,
+        displayInput:false
+};
+
+param4 = {
+        min:0,
+        max:5000,
+        fgColor:'#5133AB',
+        bgColor:'#E6E4DF',
+        inputColor:'#323A45',
+        thickness:'.1',
+        readOnly:true,
+        displayInput:false
+};
 
 options = {
         title : 'LINEデータ',
@@ -106,32 +215,24 @@ options = {
             shadow:false
         },
         canvasOverlay:{
-            show:true,
-            objects:[
-                {
-                    dashedHorizontalLine: {
-                        y:targetLine['setcelsius'],
-                        lineWidth:2,
-                        color:'#ffc0c0'                
-                    }
-                },
-                {
-                    dashedHorizontalLine:{
-                        y:targetLine['sethumidity'],
-                        linrWidth:2,
-                        color:'#8080ff'
-                    }
-                }
-            ]
+            show:true
+
         }
     };  
 
 $(document).ready(function() {
+    var url = document.URL;
+    lineid = url.split('/')[4];
+    lineno = url.split('/')[5];
     $('.simple-menu').sidr();   
     plot = $.jqplot('lineChart', graphData, options);
+    //plot2 = $.jqplot('lineChart', graphData2, options);
     //最初の描画をしたら初期化
     gfd['celsData'] = [];
     gfd['humdData'] = [];  
+    gfd['ventData'] = [];
+    gfd['co2Data'] = [];
+
     window.onresize = function(event){
        replot(); 
     };
@@ -139,6 +240,10 @@ $(document).ready(function() {
     setknobLabel(1);
     $('#dial2').knob(param2);
     setknobLabel(2);
+    $('#dial3').knob(param3);
+    setknobLabel(3);
+    $('#dial4').knob(param4);
+    setknobLabel(4);
     
     $('#pictureModal').on('shown.bs.modal',function(e){
         if(pictureShow){
@@ -150,80 +255,9 @@ $(document).ready(function() {
         }
     });
     
-    
-    $('#slider1').slider({
-        value:10,
-          min:0,
-          max:35,
-          step:1,
-          range:"min",
-          change:function(event,ui){
-              
-          },
-          slide:function(eve,ui){
-             $('#slider1').prev('span').html(ui.value+'℃');
-          },
-          create:function(ev,ui){
-              
-          }
-    });
-    
-    $('#slider2').slider({
-        value:35,
-          min:0,
-          max:100,
-          step:1,
-          range:"min",
-          change:function(event,ui){
-              
-          },
-          slide:function(eve,ui){
-             $('#slider2').prev('span').html(ui.value+'%');
-          },
-          create:function(ev,ui){
-              
-          }
-    });
-    
-   $('#range1').rangeSlider({
-       bounds:{min: 15, max: 35},
-       arrows:false,
-       step:1
-   });
-   $('#range1').bind("valuesChanging",function(e,data){
-       checkSliderPoints(1);
-   });
-   $('#range2').rangeSlider({
-       bounds:{min: 10, max: 100},
-       arrows:false,
-       step:1
-   });
-   $('#range2').bind("valuesChanging",function(e,data){
-       checkSliderPoints(2);
-   });
-    
 });
 
 $(function(){
-    $('#settingBtn').click(function(){
-        var setData = {
-                lineid:1,
-                lineno:1,
-                targetCelsius:25,
-                targetHumidity:60,
-                celsiusMode:'WAIT',
-                humidityMode:'WAIT',
-                delayCelsius:{top:3,under:3},
-                delayhumidity:{top:5,under:5}
-             };
-          //var rep = ajaxLoading('http://www.vita-factory.com/api/changesetting','post','json',setData);
-    });
-    
-    /*
-    $('.checkradio').iCheck({
-        radioClass:'iradio_flat-orange'
-    });
-    */
    //チェックされてるcheckboxの色を変更する & 表示データ切替
     $('#checkbox-item-list :checkbox').click(function(){
         if($(this).prop('checked')){
@@ -245,28 +279,52 @@ $(function(){
             realtime_flg = false;
             options.axes.xaxis.tickInterval = '1 hour';
             var setData = {
-               lineid:1,
-               lineno:1,
+               lineid:lineid,
+               lineno:lineno,
                start:ut1+32400,
                end:ut2+32400
             };
+            /*
             gfd['celsData'] = [];
             gfd['humdData'] = [];  
+            gfd['ventData'] = [];
+            gfd['co2Data'] = [];
+            */
+            gfd2['celsData'] = [];
+            gfd2['humdData'] = [];  
+            gfd2['ventData'] = [];
+            gfd2['co2Data'] = [];
+            
             var doc = $('#lineRecordTable > tbody');
             var rep = ajaxLoading('http://www.vita-factory.com/api/getRecordData','post','json',setData);
             rep.forEach(function(v){
                 setPlot({
                     celsius:v.celsius,
                     humidity:v.humidity,
-                    t_date:v.t_date-32400
+                    ventilation:v.ventilation,
+                    co2:v.co2,
+                    t_date:v.t_date-32400,
+                    relay1:v.relay1,
+                    relay2:v.relay2,
+                    relay3:v.relay3,
+                    relay4:v.relay4
                 });
+                create_graphData();
                 doc.append(
                         $('<tr></tr>')
-                            .append($('<td></td>').text(computeDuration(v.t_date)))
-                            .append($('<td></td>').text(v.celsius))
-                            .append($('<td></td>').text((v.celsius))
-                            .append($('<td></td>').text(v.humidity))   
-                            .append($('<td></td>').text(v.humidity)))
+                            .append($('<td />').text(computeDuration(v.t_date-32400)))
+                            .append($('<td style="background:#EEE;" />').text(v.celsius))
+                            .append($('<td style="background:#EEE;" />').text(v.top_range1+' ～ '+v.bottom_range1))
+                            .append($('<td style="background:#EEE;" />').text(chkOver(v.relay1)))
+                            .append($('<td />').text(v.humidity))   
+                            .append($('<td />').text(v.top_range2+' ～ '+v.bottom_range2))
+                            .append($('<td />').text(chkOver(v.relay2)))
+                            .append($('<td style="background:#EEE;" />').text(v.ventilation))   
+                            .append($('<td style="background:#EEE;" />').text(v.top_range3+' ～ '+v.bottom_range3))
+                            .append($('<td style="background:#EEE;" />').text(chkOver(v.relay3)))
+                            .append($('<td />').text(v.co2))   
+                            .append($('<td />').text(v.top_range4+' ～ '+v.bottom_range4))
+                            .append($('<td />').text(chkOver(v.relay4)))
                 );
             });
             replot();
@@ -278,26 +336,6 @@ $(function(){
         options.axes.xaxis.tickInterval = '10 minute';
         setGraphData();
         replot();
-    });
-    
-    $('#targetCelsiusBtn').click(function(){
-            $('#dial1').trigger('configure',{
-                    "max":$('#targetCelsius').val()
-           }); 
-           $('#dial1').parent('div').find('.stremWrap').find('span').eq(2).text($('#targetCelsius').val());
-    });
-    
-    $('#targetHumidityBtn').click(function(){
-        $('#dial2').trigger('configure',{
-                    "max":$('#targetHumidity').val()
-           }); 
-        var d = {
-           humidity:$('#targetHumidity').val(),
-           targetHumidity:$('#dial2').parent('div').find('.stremWrap').find('span').eq(2).text()
-        };
-        console.log(d);
-        //var rep = ajaxLoading('http://www.vita-factory.com/mail/send','post','json',d);
-        $('#dial2').parent('div').find('.stremWrap').find('span').eq(2).text($('#targetHumidity').val());
     });
     
     $('#PhotoBtn').click(function(){
@@ -316,6 +354,12 @@ $(function(){
         var rep = ajaxLoading('http://www.vita-factory.com/mail/send','post','json',{'to':'mmbarion@gmail.com'});
     });
     
+    $('#cacheDeleteBtn').click(function(){
+        var rep = ajaxLoading('http://www.vita-factory.com/api/deletecache','post','json',{lineid:lineid,lineno:lineno});
+        setGraphData();
+        replot(); 
+    });
+    
     addCheckboxText();
         //データタイムピッカー
         $('#datetimepicker1').datetimepicker({
@@ -325,7 +369,6 @@ $(function(){
 	changeYear: false,
                   dateFormat:'yy/mm/dd'
         });
-        
         $('#datetimepicker2').datetimepicker({
 	addSliderAccess: true,
 	sliderAccessArgs: { touchonly: false },
@@ -340,7 +383,6 @@ $(function(){
 	changeYear: false,
                   dateFormat:'yy/mm/dd'
         });
-        
         $('#datetimepicker4').datetimepicker({
 	addSliderAccess: true,
 	sliderAccessArgs: { touchonly: false },
@@ -353,34 +395,33 @@ $(function(){
 //読み込み完了後
 $(window).load(function(){
     var  socket1 = io.connect('/summary');
-    socketInit(socket1,{'lineid':1});
+    socketInit(socket1,{'lineid':lineid});
     setGraphData();
     replot(); 
     var setData = {
-        lineid:1,
-        lineno:1
+        lineid:lineid,
+        lineno:lineno
     };
     
     var rep = ajaxLoading('http://www.vita-factory.com/api/getsetting','post','json',setData);
-    $('#dial1').parent('div').find('.stremWrap').find('span').eq(2).text(rep.targetCelsius);
-    $('#dial2').parent('div').find('.stremWrap').find('span').eq(2).text(rep.targetHumidity);
-    $('#dial1').trigger('configure',{
-         "max":rep.targetCelsius
-    }); 
-    $('#dial2').trigger('configure',{
-          "max":rep.targetHumidity
-     });
-     
-     $('#slider1').slider('value',rep.targetCelsius);
-     $('#slider2').slider('value',rep.targetHumidity);
-     $('#slider1').prev('span.slider-span').html(rep.targetCelsius+'℃');
-     $('#slider2').prev('span.slider-span').html(rep.targetHumidity+'%');
-    
-    targetLine['setcelsius'] = rep.targetCelsius;
-    targetLine['sethumidity'] = rep.targetHumidity;
-    replot();
+    if(rep){
+        setKnobValues(rep);
+        replot();
+    }
     var rep = ajaxLoading('http://www.vita-factory.com/api/getUsers','post','json',{flg:'select'});
     setUserlist(rep);
+    
+    $('#allsettingButton').click(function(){
+        $('#settingModal').modal('toggle');
+    });
+    
+    $('#allpictureButton').click(function(){
+        $('#pictureModal').modal('toggle');
+    });
+    
+    $('#alllineButton').click(function(){
+        $('#lineModal').modal();
+    });    
     /*
     $('#showcase').awShowcase({
         content_width:700,
@@ -396,7 +437,6 @@ $(window).load(function(){
         speed_change:  true
     });
     */
-   
 });
 
 //socket.ioの設定
@@ -418,36 +458,65 @@ function socketInit(socket,obj){
      
      //サーバーからredisのpublish情報を受け取った
      socket.on('roomto',function(obj){
-         console.log(obj);
-         if(realtime_flg){
-                $('#dial1').parent('div').find('.stremWrap').find('span').eq(0).text(obj.celsius);
-                $('#dial2').parent('div').find('.stremWrap').find('span').eq(0).text(obj.humidity);
-                setPlot({celsius:obj.celsius,
-                               humidity:obj.humidity,
-                               t_date:obj.t_date
-                   });
-                   replot();
-                   
-        }
-        $('#line1logTable > tbody').append(
-                        $('<tr></tr>')
-                            .append($('<td></td>').text(computeDuration(obj.t_date)))
-                            .append($('<td></td>').text(obj.celsius))
-                            .append($('<td></td>').text(obj.humidity)
-                        )      
-                     );
-        changeKnobValue($('#dial1'),obj.celsius,'celsius');
-        changeKnobValue($('#dial2'),obj.humidity,'humidity');
+         if((obj.lineid == lineid) && (obj.lineno == lineno)){
+                console.log(obj); 
+               $('#dial1').parent('div').find('.stremWrap').find('span').eq(0).text(obj.celsius);
+               $('#dial2').parent('div').find('.stremWrap').find('span').eq(0).text(obj.humidity);
+               $('#dial3').parent('div').find('.stremWrap').find('span').eq(0).text(obj.ventilation);
+               $('#dial4').parent('div').find('.stremWrap').find('span').eq(0).text(obj.co2);
+               setKnobValues(obj);
+               if(realtime_flg){
+                       setPlot({celsius:obj.celsius,
+                                      humidity:obj.humidity,
+                                      ventilation:obj.ventilation,
+                                      co2:obj.co2,
+                                      t_date:obj.t_date,
+                                      relay1:obj.relay1,
+                                      relay2:obj.relay2,
+                                      relay3:obj.relay3,
+                                      relay4:obj.relay4
+                          });
+                          create_graphData();
+                          replot();
+               }
+               $('#line1logTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
+                                   .append($('<td style="background:#EEE;" />').text(obj.celsius))
+                                   .append($('<td style="background:#EEE;" />').text(obj.top_range1+' ～ '+obj.bottom_range1))
+                                   .append($('<td style="background:#EEE;" />').text(chkOver(obj.relay1)))
+                                   .append($('<td />').text(obj.humidity))
+                                   .append($('<td />').text(obj.top_range2+' ～ '+obj.bottom_range2))
+                                   .append($('<td />').text(chkOver(obj.relay2)))
+                                   .append($('<td style="background:#EEE;" />').text(obj.ventilation))
+                                   .append($('<td style="background:#EEE;" />').text(obj.top_range3+' ～ '+obj.bottom_range3))
+                                   .append($('<td style="background:#EEE;" />').text(chkOver(obj.relay3)))
+                                   .append($('<td />').text(obj.co2))
+                                   .append($('<td />').text(obj.top_range4+' ～ '+obj.bottom_range4))
+                                   .append($('<td />').text(chkOver(obj.relay4)))
+                            );
+               changeKnobValue($('#dial1'),obj.celsius,'celsius');
+               changeKnobValue($('#dial2'),obj.humidity,'humidity');
+               changeKnobValue($('#dial3'),obj.ventilation,'ventilation');
+               changeKnobValue($('#dial4'),obj.co2,'co2');
+          }
+          changeAllLineValues(obj);
      });
      
-     socket.on('changesetting',function(obj){
-            console.log('socket changesetting');
+     socket.on('changeSchedule',function(obj){
+            console.log('socket changeSchedule');
             console.log(obj);
             $('#dial1').trigger('configure',{
-                "max":obj.targetCelsius
+                "max":obj.top_range1,
+                "min":obj.bottom_range1
             }); 
             $('#dial2').trigger('configure',{
-                "max":obj.targetHumidity
+                "max":obj.top_range2,
+                "min":obj.bottom_range2
+            }); 
+            $('#dial4').trigger('configure',{
+                "max":obj.top_range4,
+                "min":obj.bottom_range4
             }); 
      });
      
@@ -491,18 +560,68 @@ function changeKnobValue(doc,newValue,label){
     });
 }
 
+function changeAllLineValues(obj) {
+    var eml = $('#al'+obj.lineid+'-'+obj.lineno);
+    var record = eml.children('.wrapAllLine1').find('.text_wrap').find('ul li');
+    var schedule = eml.find('.wrapAllLine2 ');
+    record.eq(0).find('span').html('温度: '+obj.celsius +' '+ chkOver(obj.relay1));
+    record.eq(1).find('span').html('湿度: '+obj.humidity +' '+ chkOver(obj.relay2));
+    record.eq(2).find('span').html('換気: '+obj.ventilation +' '+ chkOver(obj.relay3));
+    record.eq(3).find('span').html('CO2: '+obj.co2 +' '+ chkOver(obj.relay4));
+    
+};
+
+function setKnobValues(rep){
+    $('#dial1').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range1+' ～ '+rep.bottom_range1);
+    $('#dial2').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range2+' ～ '+rep.bottom_range2);
+    $('#dial3').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range3+' ～ '+rep.bottom_range3);
+    $('#dial4').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range4+' ～ '+rep.bottom_range4);
+    $('#dial1').trigger('configure',{
+         "max":rep.top_range1,
+         "min":rep.bottom_range1
+    }); 
+    $('#dial2').trigger('configure',{
+          "max":rep.top_range2,
+          "min":rep.bottom_range2
+     });
+     $('#dial3').trigger('configure',{
+         "max":rep.top_range3,
+         "min":rep.bottom_range3
+    }); 
+    $('#dial4').trigger('configure',{
+         "max":rep.top_range4,
+         "min":rep.bottom_range4
+    }); 
+    
+    sTargets.setcelsius_top.dashedHorizontalLine.y = rep.top_range1;
+    sTargets.setcelsius_bottom.dashedHorizontalLine.y = rep.bottom_range1;
+    
+    sTargets.sethumidity_top.dashedHorizontalLine.y = rep.top_range2;
+    sTargets.sethumidity_bottom.dashedHorizontalLine.y = rep.bottom_range2;
+    
+    sTargets.setventilation_top.dashedHorizontalLine.y = rep.top_range3;
+    sTargets.setventilation_bottom.dashedHorizontalLine.y = rep.bottom_range3;
+    
+    sTargets.setco2_top.dashedHorizontalLine.y = rep.top_range4;
+    sTargets.setco2_bottom.dashedHorizontalLine.y = rep.bottom_range4;    
+};
+
 //knob中心部にlabelをセット
 function setknobLabel(knobno){
     $('#dial'+knobno).parent('div')
             .append('<div class="labelWrap"></div>').find('.labelWrap')
-            .append('<span>現在値</span><span>&nbsp/&nbsp</span><span>設定値</span>');
+            .append('<span>現在値</span><span><br></span><span>上限 ～ 下限</span>');
     var doc = $('#dial'+knobno).parent('div')
             .append('<div class="stremWrap"></div>').find('.stremWrap')
-            .append('<span>***</span><span style="color:#E6E4DF">&nbsp/&nbsp</span><span>***</span>');
+            .append('<span>***</span><br><span>***</span>');
     if (knobno === 1){
         doc.append('<span class="glyphicon glyphicon-fire"></span>');
-    }else{
+    } else if(knobno === 2){
         doc.append('<span class="glyphicon glyphicon-tint"></span>');
+    } else if(knobno === 3){
+        doc.append('<span class="glyphicon glyphicon-adjust"></span>');
+    } else {
+        doc.append('<span class="glyphicon glyphicon-cloud"></span>');
     }
 }
 
@@ -538,8 +657,13 @@ function replot(){
                 plot.destroy();
             }
             checkGraphData();
-            
-            plot = $.jqplot('lineChart', graphData, options);   
+            if(realtime_flg){
+                //リアルタイムデータを描画
+                plot = $.jqplot('lineChart', graphData, options);
+            } else {
+                //選択日時データを描画
+                plot = $.jqplot('lineChart', graphData2, options);
+            }
 };
 
 //グラフ用データ配列への追加を行う
@@ -548,53 +672,106 @@ function setPlot(params){
             var nowt = computeDurationTime(parseInt(params.t_date));
             if(realtime_flg){
                 if(gfd['celsData'].length >= maxPlot) {
-                    gfd['celsData'].shift();
-                    gfd['humdData'].shift();
-                } 
+                    shit_gfd();
+                }       
             }else{
-                if(gfd['celsData'].length >= 100) {
-                    gfd['celsData'].shift();
-                    gfd['humdData'].shift();
+                if(gfd2['celsData'].length >= 100) {
+                    shit_gfd();
                 } 
             }
-        
-            gfd['celsData'].push([nowt,(1*params.celsius)]);
-            gfd['humdData'].push([nowt,(1*params.humidity)]);
-            graphData = [gfd['celsData'],gfd['humdData']];
+            if(realtime_flg){
+                    gfd['celsData'].push([nowt,(1*params.celsius)]);
+                    gfd['humdData'].push([nowt,(1*params.humidity)]);
+                    gfd['ventData'].push([nowt,(1*params.ventilation)]);
+                    gfd['co2Data'].push([nowt,(1*params.co2)]);
+
+                    if(params.relay1 === 1){gfd['celsiusup'].push([nowt,(1*params.celsius)]);}
+                    if(params.relay2 === 1){gfd['humidityup'].push([nowt,(1*params.humidity)]);}
+                    if(params.relay3 === 1){gfd['ventilationdw'].push([nowt,(1*params.ventilation)]);}
+                    if(params.relay4 === 1){gfd['co2dw'].push([nowt,(1*params.co2)]);}
+           } else {
+                    gfd2['celsData'].push([nowt,(1*params.celsius)]);
+                    gfd2['humdData'].push([nowt,(1*params.humidity)]);
+                    gfd2['ventData'].push([nowt,(1*params.ventilation)]);
+                    gfd2['co2Data'].push([nowt,(1*params.co2)]);
+
+                    if(params.relay1 === 1){gfd2['celsiusup'].push([nowt,(1*params.celsius)]);}
+                    if(params.relay2 === 1){gfd2['humidityup'].push([nowt,(1*params.humidity)]);}
+                    if(params.relay3 === 1){gfd2['ventilationdw'].push([nowt,(1*params.ventilation)]);}
+                    if(params.relay4 === 1){gfd2['co2dw'].push([nowt,(1*params.co2)]);}            
+           }
     }  
 };
 
 //サーバから取得したデータをグラフ用にしてセットする
 function setGraphData(){
     var setData = {
-        lineid:1,
-        lineno:1,
+        lineid:lineid,
+        lineno:lineno,
         pubdate:nowD()
     };
-    gfd['celsData'] = [];
-    gfd['humdData'] = [];
+    if(realtime_flg){
+            gfd['celsData'] = [];
+            gfd['humdData'] = [];
+            gfd['ventData'] = [];
+            gfd['co2Data'] = [];
+
+            gfd['celsiusup'] = [];
+            gfd['humidityup'] = [];
+            gfd['ventilationdw'] = [];
+            gfd['co2dw'] = [];
+    } else {
+            gfd2['celsData'] = [];
+            gfd2['humdData'] = [];
+            gfd2['ventData'] = [];
+            gfd2['co2Data'] = [];
+
+            gfd2['celsiusup'] = [];
+            gfd2['humidityup'] = [];
+            gfd2['ventilationdw'] = [];
+            gfd2['co2dw'] = [];        
+    }
     var rep = ajaxLoading('http://www.vita-factory.com/api/getchart','post','json',setData);
+    
     rep.forEach(function(v){
         setPlot({
             celsius:v.celsius,
             humidity:v.humidity,
-            t_date:v.t_date
+            ventilation:v.ventilation,
+            co2:v.co2,
+            t_date:v.t_date,
+            relay1:v.relay1,
+            relay2:v.relay2,
+            relay3:v.relay3,
+            relay4:v.relay4
         });
     });
-    //var obj = ajaxLoading('http://www.vita-factory.com/api/getchart','post','json',{lineid:lineid,lineno:1});
-    //console.log(obj);
-    /*
-    if(obj){
-        var wk;
-        for(var i =0; i<obj.length; i++){
-            wk = JSON.parse(obj[i]);
-            setPlot({celsius:wk.celsius,
-                            humidity:wk.humidity,
-                            t_date:wk.t_date
-            });
-        }
+    create_graphData();
+};
+
+
+function create_graphData(){
+    if(realtime_flg){
+            graphData = [];
+            if(gfd['celsData'].length !== 0){ graphData.push(gfd['celsData']); }
+            if(gfd['humdData'].length !== 0){ graphData.push(gfd['humdData']); }
+            if(gfd['ventData'].length !== 0){ graphData.push(gfd['ventData']); }
+            if(gfd['co2Data'].length !== 0){ graphData.push(gfd['co2Data']); }
+            if(gfd['celsiusup'].length !== 0){ graphData.push(gfd['celsiusup']); }
+            if(gfd['humidityup'].length !== 0){ graphData.push(gfd['humidityup']); }
+            if(gfd['ventilationdw'].length !== 0){ graphData.push(gfd['ventilationdw']); }
+            if(gfd['co2dw'].length !== 0){ graphData.push(gfd['co2dw']); }
+    } else {
+            graphData2 = [];
+            if(gfd2['celsData'].length !== 0){ graphData2.push(gfd2['celsData']); }
+            if(gfd2['humdData'].length !== 0){ graphData2.push(gfd2['humdData']); }
+            if(gfd2['ventData'].length !== 0){ graphData2.push(gfd2['ventData']); }
+            if(gfd2['co2Data'].length !== 0){ graphData2.push(gfd2['co2Data']); }
+            if(gfd2['celsiusup'].length !== 0){ graphData2.push(gfd2['celsiusup']); }
+            if(gfd2['humidityup'].length !== 0){ graphData2.push(gfd2['humidityup']); }
+            if(gfd2['ventilationdw'].length !== 0){ graphData2.push(gfd2['ventilationdw']); }
+            if(gfd2['co2dw'].length !== 0){ graphData2.push(gfd2['co2dw']); }        
     }
-    */
 };
 
 //checkboxの状態を見て表示すべきグラフデータを作成する
@@ -604,61 +781,121 @@ function checkGraphData(){
     var nary = [],
           ncolor = [],
           nlabel = [],
-          ntargetLine = {setcelsius:0,sethumidity:0};
+          ntarget = [];
           
     for(var i =0; i<wk_chkbox.length; i++){
          if(wk_chkbox[i].checked){
              str = wk_chkbox[i].name;
-             nary.push(gfd[str]);
-             ncolor.push(sColors[str]);
-             nlabel.push(sLabels[str]);
-             if(str == 'setcelsius' || str == 'sethumidity'){
-                 ntargetLine[str] = targetLine[str]
-             }
+             if(realtime_flg){
+                    if(gfd[str] !== void 0){ 
+                        nary.push(gfd[str]); 
+                        ncolor.push(sColors[str]);
+                        nlabel.push(sLabels[str]);
+                    }
+                    if(sTargets[str+'_top'] !== void 0){ 
+                        ntarget.push(sTargets[str+'_top']); 
+                    }
+                    if(sTargets[str+'_bottom'] !== void 0){ 
+                        ntarget.push(sTargets[str+'_bottom']); 
+                    }
+            } else {
+                    if(gfd2[str] !== void 0){ 
+                        nary.push(gfd2[str]); 
+                        ncolor.push(sColors[str]);
+                        nlabel.push(sLabels[str]);
+                    }
+                    if(sTargets[str+'_top'] !== void 0){ 
+                        ntarget.push(sTargets[str+'_top']); 
+                    }
+                    if(sTargets[str+'_bottom'] !== void 0){ 
+                        ntarget.push(sTargets[str+'_bottom']); 
+                    }                
+            }
          }
     }
 
-    //グラフオプションを再設定
-    options.series = nlabel;
-    options.seriesColors = ncolor;
-    options.canvasOverlay.objects[0].dashedHorizontalLine.y = ntargetLine.setcelsius;
-    options.canvasOverlay.objects[1].dashedHorizontalLine.y = ntargetLine.sethumidity;
-    graphData = nary;
+    if(realtime_flg){
+            //グラフオプションを再設定
+            options.series = nlabel;
+            options.seriesColors = ncolor;
+            options.canvasOverlay.objects = ntarget;
+            graphData = nary;
+    } else {
+            //グラフオプションを再設定
+            options.series = nlabel;
+            options.seriesColors = ncolor;
+            options.canvasOverlay.objects = ntarget;
+            graphData2 = nary;        
+    }
 };
 
-//sliderの値をチェックしてボタンのdisable属性を切り替える
-function checkSliderPoints(type){
-var flg = true;
-        if(($('#slider'+type).slider("value") > $('#range'+type).rangeSlider("max")) || 
-            ($('#slider'+type).slider("value") < $('#range'+type).rangeSlider("min"))){
-               $('#range'+type).prevAll('span.warning-span').css('opacity',1).html('設定値が正しくありません');
-               rangeBtnable [type] = false;
-         } else {
-               rangeBtnable[type] = true;       
-               $('#range'+type).prevAll('span.warning-span').css('opacity',0);
-         }
- 
-         for(var key in rangeBtnable){
-             if(rangeBtnable[key] === false){
-                 flg = false;
-             }
-         }
-         if(flg){
-             $('#sliderBtn').removeAttr('disabled');
-         }else{
-             $('#sliderBtn').attr('disabled','disabled');
-         }
-};
+function shit_gfd(){
+    if(realtime_flg){
+                    if(gfd['celsiusup'].length !== 0){
+                        if((gfd['celsData'][0][0] === gfd['celsiusup'][0][0]) && (gfd['celsData'][0][1] === gfd['celsiusup'][0][1])){
+                            gfd['celsiusup'].shift();
+                        }
+                    }
+                    if(gfd['humidityup'].length !== 0){
+                        if((gfd['humdData'][0][0] === gfd['humidityup'][0][0]) && (gfd['humdData'][0][1] === gfd['humidityup'][0][1])){
+                            gfd['humidityup'].shift();
+                        }
+                    }
+                    if(gfd['ventilationdw'].length !== 0){
+                        if((gfd['ventData'][0][0] === gfd['ventilationdw'][0][0]) && (gfd['ventData'][0][1] === gfd['ventilationdw'][0][1])){
+                            gfd['ventilationdw'].shift();
+                        }
+                    }
+                    if(gfd['co2dw'] !== 0){
+                        if((gfd['co2Data'][0][0] === gfd['co2dw'][0][0]) && (gfd['co2Data'][0][1] === gfd['co2dw'][0][1])){
+                            gfd['co2dw'].shift();
+                        }    
+                    }
+                    gfd['celsData'].shift();
+                    gfd['humdData'].shift();
+                    gfd['ventData'].shift();
+                    gfd['co2Data'].shift();
+  } else {
+                    if(gfd2['celsiusup'].length !== 0){
+                        if((gfd2['celsData'][0][0] === gfd2['celsiusup'][0][0]) && (gfd2['celsData'][0][1] === gfd2['celsiusup'][0][1])){
+                            gfd2['celsiusup'].shift();
+                        }
+                    }
+                    if(gfd2['humidityup'].length !== 0){
+                        if((gfd2['humdData'][0][0] === gfd2['humidityup'][0][0]) && (gfd2['humdData'][0][1] === gfd2['humidityup'][0][1])){
+                            gfd2['humidityup'].shift();
+                        }
+                    }
+                    if(gfd2['ventilationdw'].length !== 0){
+                        if((gfd2['ventData'][0][0] === gfd2['ventilationdw'][0][0]) && (gfd2['ventData'][0][1] === gfd2['ventilationdw'][0][1])){
+                            gfd2['ventilationdw'].shift();
+                        }
+                    }
+                    if(gfd2['co2dw'].length !== 0){
+                        if((gfd2['co2Data'][0][0] === gfd2['co2dw'][0][0]) && (gfd2['co2Data'][0][1] === gfd2['co2dw'][0][1])){
+                            gfd2['co2dw'].shift();
+                        }                     
+                    }
+                    gfd2['celsData'].shift();
+                    gfd2['humdData'].shift();
+                    gfd2['ventData'].shift();
+                    gfd2['co2Data'].shift();                    
+  }              
+}
 
 function addCheckboxText(){
     $('#inlineCheckbox1').after('<span>温度</span>');
     $('#inlineCheckbox2').after('<span>湿度</span>');
-    $('#inlineCheckbox3').after('<span>設定温度</span>');
-    $('#inlineCheckbox4').after('<span>設定湿度</span>');
-    $('#inlineCheckbox5').after('<span>温度UP</span>');
-    $('#inlineCheckbox6').after('<span>温度DW</span>');
-    $('#inlineCheckbox7').after('<span>湿度UP</span>');
-    $('#inlineCheckbox8').after('<span>湿度DW</span>');
+    $('#inlineCheckbox3').after('<span>換気</span>');
+    $('#inlineCheckbox4').after('<span>CO2</span>');
+    $('#inlineCheckbox5').after('<span>温度範囲</span>');
+    $('#inlineCheckbox6').after('<span>湿度範囲</span>');
+    $('#inlineCheckbox7').after('<span>換気範囲</span>');
+    $('#inlineCheckbox8').after('<span>CO2範囲</span>');
+    $('#inlineCheckbox9').after('<span>温度リレー</span>');
+    $('#inlineCheckbox10').after('<span>湿度リレー</span>');
+    $('#inlineCheckbox11').after('<span>換気リレー</span>');
+    $('#inlineCheckbox12').after('<span>CO2リレー</span>');
 };
 
 //0埋め
@@ -717,3 +954,11 @@ function getUnixTime(num){
     var u = Math.round(t.getTime()/1000);
     return u;
 }
+
+function chkOver(flg){
+    if(parseInt(flg) === 0){
+        return "OFF";
+    } else {
+        return "ON"; 
+    }
+};

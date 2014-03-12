@@ -11,16 +11,16 @@ label {
 }
 
 li {
-    font-weight:bold;
+    
 }
 
 .panel-c {
     margin-bottom: 25px;
-height: 500px;
+height: 345px;
 }
 
 .panel-c > .panel-body {
-    height:457px;
+    height:300px;
     overflow: scroll;
 }
 
@@ -69,6 +69,24 @@ height: 500px;
     -webkit-animation-direction:alternate;
 }
 
+.stremWrap > span.glyphicon-adjust {
+    -webkit-animation-name: 'anime3';
+    -webkit-animation-duration: 5s;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-delay:0;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction:alternate;
+}
+
+.stremWrap > span.glyphicon-cloud {
+    -webkit-animation-name: 'anime4';
+    -webkit-animation-duration: 5s;
+    -webkit-animation-timing-function: ease;
+    -webkit-animation-delay:0;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction:alternate;
+}
+
 @-webkit-keyframes 'anime1' {
     0% {    color:#dadada;  }
     100% {  color:#ED5D5C;  }
@@ -77,7 +95,14 @@ height: 500px;
     0% {    color:#dadada;  }
     100% {  color:#98D1CD;  }
 }
-
+@-webkit-keyframes 'anime3' {
+    0% {    color:#dadada;  }
+    100% {  color:#FFD464;  }
+}
+@-webkit-keyframes 'anime4' {
+    0% {    color:#dadada;  }
+    100% {  color:#5133AB;  }
+}
 
 .input-group-c {
     margin-bottom:22px;
@@ -123,7 +148,13 @@ height: 500px;
 }
 
 .col-p15 {
+    box-shadow:0 0 1px rgba(0,0,0,0.7);
+    margin-left:6px;
+    margin-right:6px;
+    width:24% !important;
+    padding-top:10px;
     border-radius:5px;
+    margin-bottom:15px;
 }
 
 .col-p15:hover {
@@ -167,7 +198,8 @@ height: 500px;
 }
 
 .ui-widget-content {
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#67707F), color-stop(100%,#888DA0)) !important;
+    //background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#67707F), color-stop(100%,#888DA0)) !important;
+    z-index:9999 !important;
     margin-bottom:30px;
 }
 
@@ -194,4 +226,16 @@ height: 500px;
     position: absolute;
     opacity: 0;
     color:#ff4040;
+}
+
+.wrapAllLine {
+    
+}
+
+.text_wrap ul {
+    padding-left: 0;
+}
+
+.text_wrap ul li {
+    list-style-type: none;
 }

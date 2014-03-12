@@ -140,16 +140,17 @@ mushrecord.setTimeSchedule = function(params,callback){
                 params.lineno,
                 params.start,
                 params.end,
-                params.rangeMax,
-                params.rangeMin,
-                params.topRangeOver,
-                params.bottomRangeOver,
+                params.top_range,
+                params.bottom_range,
+                params.top_range_over,
+                params.bottom_range_over,
                 
             ],function(err,res){
                     db.end();
                     if(err){
                         callback(new Error('Insert failed.[setTimeSchedule]'));
                     }
+                    
                     callback(null);
             });
     } else {

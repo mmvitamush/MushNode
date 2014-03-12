@@ -65,24 +65,15 @@ sub1.on('message',function(channel,message){
                     t_date:obj.t_date
                 };
      //io.of('/line').in('1').emit('roomto',{celsius:obj.celsius,humidity:obj.humidity,t_date:obj.t_date});
-     io.of('/summary').emit('roomto',obj_wk);
+     io.of('/summary').emit('roomto',obj);
 });
-/*
-sub2.subscribe('linepub:1:2');
+
+sub2.subscribe('changeSchedule');
 sub2.on('message',function(channel,message){
      var obj = JSON.parse(message);
-     var obj_wk = {
-                    celsius:obj.celsius,
-                    humidity:obj.humidity,
-                    setcelsius:obj.setcelsius,
-                    sethumidity:obj.sethumidity,
-                    mcn1:obj.mcn1,
-                    mcn2:obj.mcn2,
-                    t_date:obj.t_date
-                };
-    io.of('/summary').in('1:2').emit('roomto',obj_wk);     
+    io.of('/summary').emit('changeSchedule',obj);     
 });
-*/
+
 
 //動的に名前空間を追加する
 /*
@@ -128,7 +119,7 @@ app.use(express.session({
     }),
     cookie:{
         httpOnly:false,
-        maxAge:new Date(Date.now() + 60 * 60 * 1000)
+        maxAge:new Date(Date.now() + 60 * 60 * 10)
     }
 }));
 app.use(express.favicon(path.join(__dirname, 'public/images/favicon.ico')));
@@ -155,7 +146,7 @@ app.get('/dashboard',routes.dashboard);
 app.get('/record/:lineId',routes.record);
 app.get('/line/:lineId',routes.line);
 app.get('/summary',routes.summary);
-app.get('/sample',routes.sample);
+app.get('/sample/:lineid/:lineno',routes.sample);
 app.get('/schedule/:lineid/:lineno',routes.schedule);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
@@ -164,6 +155,7 @@ app.post('/api/changesetting',routes.changesetting);
 app.post('/api/getsetting',routes.getsetting);
 app.post('/api/getTimeSchedule',routes.getTimeSchedule);
 app.post('/api/deleteTimeSchedule',routes.deleteTimeSchedule);
+app.post('/api/deletecache',routes.deleteCache);
 app.post('/api/updateTimeSchedule',routes.updateTimeSchedule);
 app.post('/api/getS3Photo',routes.getS3Photo);
 app.post('/api/getUsers',routes.getUsers);
