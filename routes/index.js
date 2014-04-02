@@ -132,12 +132,8 @@ exports.summary = function(req,res){
 
 exports.sample = function(req,res){
    var lineid = Number(req.params.lineid);
-   if(isNaN(lineid)){
-       res.send(404);
-       return;
-   }
    var lineno = Number(req.params.lineno);
-   if(isNaN(lineno)){
+   if(!linecheck(lineid,lineno)){
        res.send(404);
        return;
    }
@@ -156,14 +152,35 @@ exports.sample = function(req,res){
                 }
             }   
             res.render('sample',{
-            page:{title:'Sample Page'},
-            user:req.session.user,
-            lineLabel:lineData,
-            lineParams:lineParams,
-            error:200
-    });
+                page:{title:'Sample Page'},
+                user:req.session.user,
+                lineLabel:lineData,
+                lineParams:lineParams,
+                error:200
+            });
      });
  
+};
+
+exports.observer = function(req,res){
+    var deviceData = [];
+    db_mushrecord.readDevice(function(err,resp){
+            if(err){
+                console.log(err);
+                deviceData.push('0-1');
+            }else{
+                for(var i=0; i<resp.length; i++){
+                    deviceData.push({lineid:resp[i].lineid,lineno:resp[i].lineno,auto_control:resp[i].auto_control,online:resp[i].online});
+                }
+                console.log(deviceData);
+            }   
+            res.render('observer',{
+                page:{title:'observer Page'},
+                user:req.session.user,
+                device:deviceData,
+                error:200
+            });
+     });   
 };
 
 exports.record = function(req,res){
@@ -173,7 +190,8 @@ exports.record = function(req,res){
    }
    
    var lineId = Number(req.params.lineId);
-   if(isNaN(lineId)){
+   var lineno = Number(req.params.lineno);
+   if(!linecheck(lineid,lineno)){
        res.send(404);
        return;
    }
@@ -191,12 +209,8 @@ exports.record = function(req,res){
 
 exports.schedule = function(req,res){
    var lineid = Number(req.params.lineid);
-   if(isNaN(lineid)){
-       res.send(404);
-       return;
-   }
    var lineno = Number(req.params.lineno);
-   if(isNaN(lineno)){
+   if(!linecheck(lineid,lineno)){
        res.send(404);
        return;
    }
@@ -261,32 +275,27 @@ exports.getChart = function(req,res){
    
 };
 
-
+//設定の変更や登録があったときの処理
 exports.changesetting = function(req,res){
-   /* 
-    * Redis Ver.
-   var hashkey = 'linesetting'; 
-   var subkey = req.body.lineid + ':' + req.body.lineno;
-   var params = {
-       targetCelsius:req.body.targetCelsius,
-       targetHumidity:req.body.targetHumidity,
-       celsiusMode:req.body.celsiusMode,
-       humidityMode:req.body.humidityMode,
-       delayCelsius:{top:req.body.delayCelsius.top,under:req.body.delayCelsius.under},
-       delayHumidity:{top:req.body.delayhumidity.top,under:req.body.delayhumidity.under}
+   /* Redis */
+   var hashkey = 'linesetting:'+req.body.lineid+':'+req.body.lineno; 
+   var subkey = 'relay'+req.body.relaySelect;
+   var obj = {
+       start_date:req.body.start,
+       end_date:req.body.end,
+       bottom_range:req.body.rangeMin,
+       top_range:req.body.rangeMax,
+       top_range_over:req.body.topRangeOver,
+       bottom_range_over:req.body.bottomRangeOver,
+       vent_value:req.body.vent_value,
+       vent_flg:req.body.vent_flg
    };
-   redislibs.sethash(hashkey,subkey,JSON.stringify(params),function(err,rep){
+   redislibs.sethash(hashkey,subkey,JSON.stringify(obj),function(err,rep){
        if(err){
             console.log(err);
-            res.send(500);
-            return;
         }
-        
-        res.send(200);
-        return;
    });
-   */
-  
+   
   /* MySQL Ver. */
   var params = {
         lineid:req.body.lineid,
@@ -297,7 +306,9 @@ exports.changesetting = function(req,res){
         top_range_over:req.body.topRangeOver,
         bottom_range_over:req.body.bottomRangeOver,
         start:req.body.start,
-        end:req.body.end
+        end:req.body.end,
+        vent_value:req.body.vent_value,
+        vent_flg:req.body.vent_flg
   };
             db_mushrecord.setTimeSchedule(params,function(err){
                 var restr = 'changeSetting Success.';
@@ -311,15 +322,14 @@ exports.changesetting = function(req,res){
 };
 
 exports.getsetting = function(req,res){
-    var key = 'linesetting:'+req.body.lineid + ':' + req.body.lineno;
+    var key = 'linesetting:';
     //redislibs.trimHash({lineid:req.body.lineid,lineno:req.body.lineno});
-    redislibs.getSettingData(key,function(err,rep){
+    redislibs.getSettingData(req.body.lineid,req.body.lineno,key,function(err,rep){
             if(err){
                 console.log(err);
                 res.send(500);
                 return;
             }
-
             var str1 = JSON.parse(rep.relay1),
                   str2 = JSON.parse(rep.relay2),
                   str3 = JSON.parse(rep.relay3),
@@ -391,7 +401,9 @@ exports.updateTimeSchedule = function(req,res){
         top_range:req.body.top_range,
         bottom_range:req.body.bottom_range,
         top_range_over:req.body.top_range_over,
-        bottom_range_over:req.body.bottom_range_over
+        bottom_range_over:req.body.bottom_range_over,
+        vent_value:req.body.vent_value,
+        vent_flg:req.body.vent_flg
     };
     if(checkNum(params)){
             db_mushrecord.updateTimeSchedule(params,function(err){
@@ -499,6 +511,14 @@ exports.getLog = function(req,res){
 exports.wsgate = function(req,res){
     
 };
+
+function linecheck(lineid,lineno){
+   if(isNaN(lineid) && isNaN(lineno)){
+       return false;
+   } else {
+       return true;
+   }
+}
 
 //数値判定 数値ならtrueを返す
 function checkNum(obj){

@@ -26,6 +26,10 @@ label {
     z-index:9999 !important;
 }
 
+.ui-spinner {
+    z-index:100 !important;
+}
+
 #ui-datepicker-div {
     z-index:10000 !important;
 }
@@ -34,7 +38,7 @@ label {
     border:1px solid #EEE !important;
 }
 
-#range1,#range2 {
+#range1,#range2{
     margin-bottom:15px;
 }
 

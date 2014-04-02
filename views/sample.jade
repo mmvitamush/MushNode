@@ -42,7 +42,7 @@ html(lang='ja')
         script(src='/javascripts/icheck.min.js')
         script(src='/javascripts/jquery.aw-showcase.min.js')
         script(src='/javascripts/jQAllRangeSliders-min.js')
-        script(src='/javascripts/sample.js',type='text/javascript')
+        script(src='/javascripts/sample2.js',type='text/javascript')
         script(src='/javascripts/settingScript.js',type='text/javascript')
   body
   block content
@@ -52,9 +52,8 @@ html(lang='ja')
                     .navbar-header.rl
                         a.navbar-brand.vflogo.simple-menu(href='#sidr') VF
                     .collapse.navbar-collapse
-                        p.navbar-text(style='font-size:19px')
-                            i.glyphicon.glyphicon-list-alt
-                            | &nbsp サマリー
+                    - var name = lineParams.lineid + ':' + lineParams.lineno;
+                        p.navbar-text(style='font-size:19px; position:absolute; left:55px; top:0px;') ライン#{name}レコード
                         .nav.navbar-nav.nav-right(style='position:absolute; top:10px; right:10px;')
                             button#deviceSettingButton.btn.btn-default(data-toggle='modal',data-target='#deviceSettingModal',style='padding: 10px 12px 6px 12px !important;')
                                 span.glyphicon.glyphicon-cog    
@@ -103,41 +102,115 @@ html(lang='ja')
                             .progress.progress-striped.active.c_progress
                                 #info-progress.progress-bar.progress-bar-warning(role='progressbar',aria-valuenow='10',aria-valuemin='0',aria-valuemax='10',style='width:100%')
                         
-      .row(style="height:300px;")
-        .col-lg-3
-            .dial2Wrap
-                input#dial1(type='text',data-width='240',data-height='240',data-linecap='round')
-        .col-lg-3
-            .dial2Wrap
-                input#dial2(type='text',data-width='240',data-height='240',data-linecap='round')
-        .col-lg-3
-            .dial2Wrap
-                input#dial3(type='text',data-width='240',data-height='240',data-linecap='round')
-        .col-lg-3
-            .dial2Wrap
-                input#dial4(type='text',data-width='240',data-height='240',data-linecap='round')       
-      .row          
-        .col-lg-12
-            .panel.panel-default.panel-c
-                .panel-heading リアルタイムログ
+      .row
+        .col-md-4(style="margin-bottom:20px;")
+            .panel.panel-danger
+                .panel-heading
+                    span.glyphicon.glyphicon-fire.glyphicon-c(style="color:#FFCE54;")
+                    | 温度
                 .panel-body 
-                    table#line1logTable.table
+                    table#dial1table.table(style="margin-bottom:0px !important;")
+                        thead
+                            tr
+                                th 現在値
+                                th 上限
+                                th 下限
+                                th リレー
+                                th 換気上限
+                        tbody  
+                            tr.stext
+                                td 0
+                                td 0
+                                td 0
+                                td OFF
+                                td 0
+                            
+        .col-md-4(style="margin-bottom:20px;")
+            .panel.panel-primary
+                .panel-heading
+                    span.glyphicon.glyphicon-tint.glyphicon-c(style="color:#98D1CD;")
+                    | 湿度
+                .panel-body 
+                    table#dial2table.table(style="margin-bottom:0px !important;")
+                        thead
+                            tr
+                                th 現在値
+                                th 上限
+                                th 下限
+                                th リレー
+                                th 換気上限
+                        tbody
+                            tr.stext
+                                td 0
+                                td 0
+                                td 0
+                                td OFF
+                                td 0
+
+        .col-md-4(style="margin-bottom:20px;")
+            .panel.panel-success
+                .panel-heading
+                    span.glyphicon.glyphicon-cloud.glyphicon-c(style="color:#5133AB;")
+                    | CO2
+                .panel-body 
+                    table#dial4table.table(style="margin-bottom:0px !important;")
+                        thead
+                            tr
+                                th 現在値
+                                th 上限
+                                th 下限
+                                th リレー
+                                th 換気上限
+                        tbody
+                            tr.stext
+                                td 0
+                                td 0
+                                td 0
+                                td OFF
+                                td 0
+
+      .row          
+        .col-lg-4
+            .panel.panel-default.panel-c
+                .panel-heading 温度リアルタイムログ
+                .panel-body 
+                    table#celsius_rt_LogTable.table
                         thead
                             tr
                                 th 日時
                                 th 温度
                                 th 設定範囲
                                 th リレー
+                                th 換気上限
+                        tbody    
+      
+        .col-lg-4
+            .panel.panel-default.panel-c
+                .panel-heading 湿度リアルタイムログ
+                .panel-body 
+                    table#humidity_rt_LogTable.table
+                        thead
+                            tr
+                                th 日時
                                 th 湿度
                                 th 設定範囲
                                 th リレー
-                                th 換気
+                                th 換気上限
+                        tbody        
+
+        .col-lg-4
+            .panel.panel-default.panel-c
+                .panel-heading CO2リアルタイムログ
+                .panel-body 
+                    table#co2_rt_LogTable.table
+                        thead
+                            tr
+                                th 日時
+                                th CO2
                                 th 設定範囲
                                 th リレー
-                                th CO2
-                                th 設定C範囲
-                                th リレー
-                        tbody              
+                                th 換気上限
+                        tbody           
                       
       .row(style='background:#EEE; padding:10px; margin-top:20px;')
         .col-lg-12
@@ -178,18 +251,18 @@ html(lang='ja')
                     table#lineRecordTable.table.table-striped
                         thead
                             th 日時
-                            th 温度
-                            th 設定範囲
-                            th リレー
+                            th(style="background:#EEE;") 温度
+                            th(style="background:#EEE;") 設定範囲
+                            th(style="background:#EEE;") リレー
+                            th(style="background:#EEE;") 換気上限
                             th 湿度
                             th 設定範囲
                             th リレー
-                            th 換気
-                            th 設定範囲
-                            th リレー
-                            th CO2
-                            th 設定範囲
-                            th リレー
+                            th 換気上限
+                            th(style="background:#EEE;") CO2
+                            th(style="background:#EEE;") 設定C範囲
+                            th(style="background:#EEE;") リレー
+                            th(style="background:#EEE;") 換気上限
                         tbody
                   
 

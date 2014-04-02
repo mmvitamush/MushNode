@@ -15,12 +15,12 @@ li {
 }
 
 .panel-c {
-    margin-bottom: 25px;
-height: 345px;
+    margin-bottom: 0px;
+height: 280px;
 }
 
 .panel-c > .panel-body {
-    height:300px;
+    height:250px;
     overflow: scroll;
 }
 
@@ -238,4 +238,43 @@ height: 345px;
 
 .text_wrap ul li {
     list-style-type: none;
+}
+
+.glyphicon-c {
+    margin-right: 4px;
+    top: 3px;
+    font-size: 20px;
+}
+
+.panel-heading {
+    font-weight:bold;
+}
+
+.stext {
+    text-shadow: 0 0 1px rgba(0,0,0,0.3);
+    font-size: 18px;
+}
+
+.panel-heading {
+    padding:3px 10px !important;
+}
+
+.panel-danger>.panel-heading {
+    background:#E9573F !important;
+    color:#FFF !important;
+}
+
+.panel-primary>.panel-heading {
+    background:#4A89DC !important;
+    color:#FFF !important;    
+}
+
+.panel-success >.panel-heading {
+    background:#967ADC !important;
+    color:#FFF !important;    
+}
+
+.panel-default >.panel-heading {
+    background:#E6E9ED !important;
+    color:#555 !important;    
 }

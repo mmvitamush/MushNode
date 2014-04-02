@@ -26,7 +26,14 @@ $(document).ready(function(){
            $('#calendar1').fullCalendar('removeEvents');
            $('#scheduleTable').empty();
            addScheduleData(rep);
-           $('#RelayLabel').html($('#RelaySelector option:selected').text().substr(7,2));    
+           $('#RelayLabel').html($('#RelaySelector option:selected').text().substr(7));    
+           if($('#RelaySelector option:selected').val() === '4'){
+               $('#range1').rangeSlider('option','bounds',{min: 100, max: 2000});
+               $('#range1').rangeSlider('option','step',10);
+           } else {
+               $('#range1').rangeSlider('option','bounds',{min: 0, max: 100}); 
+               $('#range1').rangeSlider('option','step',1);
+           }
        }else{
            $('#RelayLabel').html('選択してください');
        }
@@ -79,7 +86,9 @@ $(function(){
            topRangeOver:$('[name=TopRange]:checked').val(),
            bottomRangeOver:$('[name=BottomRange]:checked').val(),
            start:Math.round((new Date($('#datetimepicker1').val())).getTime()/1000),
-           end:Math.round((new Date($('#datetimepicker2').val())).getTime()/1000)
+           end:Math.round((new Date($('#datetimepicker2').val())).getTime()/1000),
+           vent_value:parseFloat($('#range1').rangeSlider("max"))+parseFloat($('#ventilationSpinner').val()),
+           vent_flg:$('[name=ventRadio]:checked').val()
        };
        var rep = ajaxLoading('http://www.vita-factory.com/api/changesetting','post','json',setData);
        if(rep.respons === "changeSetting Success."){
@@ -89,7 +98,9 @@ $(function(){
                top_range:$('#range1').rangeSlider("max"),
                top_range_over:$('[name=TopRange]:checked').val(),
                bottom_range:$('#range1').rangeSlider("min"),
-               bottom_range_over:$('[name=BottomRange]:checked').val()
+               bottom_range_over:$('[name=BottomRange]:checked').val(),
+               vent_value:parseFloat($('#range1').rangeSlider("max"))+parseFloat($('#ventilationSpinner').val()),
+               vent_flg:$('[name=ventRadio]:checked').val()
            }];
            //カレンダーイベントデータの初期化
            calEvent.length = 0;
@@ -157,6 +168,7 @@ $(function(){
             }
    });
    
+   var spinner = $( "#ventilationSpinner" ).spinner();
 });
 
 $(window).load(function(){
@@ -175,8 +187,13 @@ function addScheduleData(rep) {
                             .append($('<td />').html(computeDuration(rep[i].start_date)+'<br />'+computeDuration(rep[i].end_date)))
                             .append($('<td />').html(rep[i].top_range+'<br />'+chkOver(rep[i].top_range_over)))
                             .append($('<td  />').html(rep[i].bottom_range+'<br />'+chkOver(rep[i].bottom_range_over)))
-                            .append($('<td ><button id="editbtn'+calendarid+'" class="btn btn-success"><span class="glyphicon glyphicon-pencil"></span></button></td>'))
-                            .append($('<td ><button id="removebtn'+calendarid+'" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span></button></td>'))
+                            .append($('<td  />').html(rep[i].vent_value+'<br />'+chkOver(rep[i].vent_flg)))
+                            //.append($('<td ><button id="editbtn'+calendarid+'" class="btn btn-success"><span class="glyphicon glyphicon-pencil"></span></button></td>'))
+                            //.append($('<td ><button id="removebtn'+calendarid+'" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span></button></td>'))
+                            .append($('<td >\n\
+                            <button id="editbtn'+calendarid+'" class="btn btn-success"><span class="glyphicon glyphicon-pencil"></span></button><br />\n\
+                            <button id="removebtn'+calendarid+'" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span></button>\n\
+                            </td>'))
                             .append($('<input type="hidden" name="start_date" value="'+rep[i].start_date+'" />'))
                             .append($('<input type="hidden" name="end_date" value="'+rep[i].end_date+'" />'))
                             .append($('<input type="hidden" name="top_range" value="'+rep[i].top_range+'" />'))
@@ -184,6 +201,8 @@ function addScheduleData(rep) {
                             .append($('<input type="hidden" name="calendar_id" value="'+calendarid+'" />'))
                             .append($('<input type="hidden" name="top_range_over" value="'+rep[i].top_range_over+'" />'))
                             .append($('<input type="hidden" name="bottom_range_over" value="'+rep[i].bottom_range_over+'" />'))
+                            .append($('<input type="hidden" name="vent_value" value="'+rep[i].vent_value+'" />'))
+                            .append($('<input type="hidden" name="vent_flg" value="'+rep[i].vent_flg+'" />'))
         );
         /* 編集ボタン */
         $('#editbtn'+calendarid).on('click',function(){
@@ -191,7 +210,7 @@ function addScheduleData(rep) {
                 $('#dialog-edit').dialog({
                     resizable:false,
                     width:500,
-                    height:450,
+                    height:520,
                     modal:true,
                     title:"スケジュール編集",
                     open:function(event, ui){ 
@@ -202,6 +221,7 @@ function addScheduleData(rep) {
                                 arrows:false,
                                 step:1
                             });
+                            $( "#editventilationSpinner" ).spinner();
                             $('#editrange1').rangeSlider("values", elm.find("[name=bottom_range]").val(), elm.find("[name=top_range]").val());
                             $('#editdatetimepicker1').val(computeDuration(elm.find("[name=start_date]").val()));
                             $('#editdatetimepicker2').val(computeDuration(elm.find("[name=end_date]").val()));
@@ -212,6 +232,8 @@ function addScheduleData(rep) {
                             $('#edit-dialog-content > input[name=target_id]').val(elm.find("[name=calendar_id]").val());
                             $('#edit-dialog-content > input[name=edit_start_date]').val(elm.find("[name=start_date]").val());
                             $('#edit-dialog-content > input[name=edit_end_date]').val(elm.find("[name=end_date]").val());
+                            $('#editventilationSpinner').val(parseFloat(elm.find("[name=vent_value]").val()) - parseFloat(elm.find("[name=top_range]").val()));
+                            $('#edit-dialog-content input[name="editventRadio"]').val([elm.find("[name=vent_flg]").val()]);
                     },
                     buttons:{
                         "キャンセル":function(){
@@ -240,6 +262,7 @@ function addScheduleData(rep) {
                                 .append($('<p />').text('ライン:'+lineid+'-'+lineno))
                                 .append($('<p />').text('開始日時: '+computeDuration(elm.find("[name=start_date]").val())))
                                 .append($('<p />').text('終了日時: '+computeDuration(elm.find("[name=end_date]").val())))
+                                .append($('<p />').text('換気上限 : '+elm.find("[name=vent_value]").val()))
                                 .append($('<p />').text('上限 : '+elm.find("[name=top_range]").val()))
                                 .append($('<p />').text('下限 : '+elm.find("[name=bottom_range]").val()));
                     },
@@ -318,7 +341,9 @@ function resetCalendarEvent(){
           start_date:$('#edit-dialog-content > input[name=edit_start_date]').val(),
           end_date:$('#edit-dialog-content > input[name=edit_end_date]').val(),
           top_range_over:$('#edit-dialog-content  input[name="editTopRange"]:checked').val(),
-          bottom_range_over:$('#edit-dialog-content  input[name="editBottomRange"]:checked').val()
+          bottom_range_over:$('#edit-dialog-content  input[name="editBottomRange"]:checked').val(),
+          vent_value:parseFloat($('#editventilationSpinner').val())+parseFloat($('#editrange1').rangeSlider("max")),
+          vent_flg:$('#edit-dialog-content  input[name="editventRadio"]:checked').val()
        };
        
        //編集データをサーバに送り更新する
@@ -331,7 +356,7 @@ function resetCalendarEvent(){
                                     title:"しばらくお待ちください",
                                     open:function(ev,ui){
                                         $(".ui-dialog-titlebar-close").hide();
-                                        /* ajaxでサーバーに削除命令を送信 */
+                                        /* ajaxでサーバーに更新命令を送信 */
                                         var postData = {
                                             relaySelect:$('#RelaySelector option:selected').val(),
                                             lineid:lineid,
@@ -341,7 +366,9 @@ function resetCalendarEvent(){
                                             top_range:obj.top_range,
                                             bottom_range:obj.bottom_range,
                                             top_range_over:obj.top_range_over,
-                                            bottom_range_over:obj.bottom_range_over
+                                            bottom_range_over:obj.bottom_range_over,
+                                            vent_value:obj.vent_value,
+                                            vent_flg:obj.vent_flg
                                         };
                                  
                                         var rep = ajaxLoading('http://www.vita-factory.com/api/updateTimeSchedule','post','json',postData);
@@ -356,6 +383,8 @@ function resetCalendarEvent(){
                                             elm.children('[name=top_range]').val(obj.top_range);
                                             elm.children('[name=top_range_over]').val(obj.top_range_over);
                                             elm.children('[name=bottom_range_over]').val(obj.bottom_range_over);
+                                            elm.children('[name=vent_value]').val(obj.vent_value);
+                                            elm.children('[name=vent_flg]').val(obj.vent_flg);
                                             var event = [{
                                                  id:obj.id,
                                                  title:'上限: '+obj.top_range+' 下限: '+obj.bottom_range,
@@ -383,7 +412,9 @@ function createTooltipElement(dt){
             .append($('<p />').text('上限: '+dt.top_range))
             .append($('<p />').text('上限到達時: '+chkOver(dt.top_range_over)))
             .append($('<p />').text('下限: '+dt.bottom_range))
-            .append($('<p />').text('下限到達時: '+chkOver(dt.bottom_range_over)));
+            .append($('<p />').text('下限到達時: '+chkOver(dt.bottom_range_over)))
+            .append($('<p />').text('換気上限: '+dt.vent_value))
+            .append($('<p />').text('換気上限到達時: '+chkOver(dt.vent_flg)));
     return doc;
 };
 

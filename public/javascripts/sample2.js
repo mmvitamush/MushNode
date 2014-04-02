@@ -118,56 +118,11 @@ gfd2['co2dw'] = [];
 graphData = [gfd['celsData'],gfd['humdData'],gfd['ventData'],gfd['co2Data']];
 graphData2 = [gfd2['celsData'],gfd2['humdData'],gfd2['ventData'],gfd2['co2Data']];
 
-var maxPlot = 100;
+var maxPlot = 60;
 var realtime_flg = true,
       pictureShow = true,
       rangeBtnable = [];
       
-
-param1 = {
-        min:0,
-        max:40,
-        fgColor:'#ED5D5C',
-        bgColor:'#E6E4DF',
-        inputColor:'#323A45',
-        thickness:'.1',
-        readOnly:true,
-        displayInput:false
-    };
-    
-param2 = {
-        min:0,
-        max:80,
-        fgColor:'#98D1CD',
-        bgColor:'#E6E4DF',
-        inputColor:'#323A45',
-        thickness:'.1',
-        readOnly:true,
-        displayInput:false
-};
-
-param3 = {
-        min:0,
-        max:100,
-        fgColor:'#FFD464',
-        bgColor:'#E6E4DF',
-        inputColor:'#323A45',
-        thickness:'.1',
-        readOnly:true,
-        displayInput:false
-};
-
-param4 = {
-        min:0,
-        max:5000,
-        fgColor:'#5133AB',
-        bgColor:'#E6E4DF',
-        inputColor:'#323A45',
-        thickness:'.1',
-        readOnly:true,
-        displayInput:false
-};
-
 options = {
         title : 'LINEデータ',
         series:stackLabel,
@@ -236,14 +191,6 @@ $(document).ready(function() {
     window.onresize = function(event){
        replot(); 
     };
-    $('#dial1').knob(param1);
-    setknobLabel(1);
-    $('#dial2').knob(param2);
-    setknobLabel(2);
-    $('#dial3').knob(param3);
-    setknobLabel(3);
-    $('#dial4').knob(param4);
-    setknobLabel(4);
     
     $('#pictureModal').on('shown.bs.modal',function(e){
         if(pictureShow){
@@ -316,15 +263,15 @@ $(function(){
                             .append($('<td style="background:#EEE;" />').text(v.celsius))
                             .append($('<td style="background:#EEE;" />').text(v.top_range1+' ～ '+v.bottom_range1))
                             .append($('<td style="background:#EEE;" />').text(chkOver(v.relay1)))
+                            .append($('<td style="background:#EEE;" />').text(v.vent_value1))
                             .append($('<td />').text(v.humidity))   
                             .append($('<td />').text(v.top_range2+' ～ '+v.bottom_range2))
                             .append($('<td />').text(chkOver(v.relay2)))
-                            .append($('<td style="background:#EEE;" />').text(v.ventilation))   
-                            .append($('<td style="background:#EEE;" />').text(v.top_range3+' ～ '+v.bottom_range3))
-                            .append($('<td style="background:#EEE;" />').text(chkOver(v.relay3)))
-                            .append($('<td />').text(v.co2))   
-                            .append($('<td />').text(v.top_range4+' ～ '+v.bottom_range4))
-                            .append($('<td />').text(chkOver(v.relay4)))
+                            .append($('<td />').text(v.vent_value2)) 
+                            .append($('<td style="background:#EEE;" />').text(v.co2))   
+                            .append($('<td style="background:#EEE;" />').text(v.top_range4+' ～ '+v.bottom_range4))
+                            .append($('<td style="background:#EEE;" />').text(chkOver(v.relay4)))
+                            .append($('<td style="background:#EEE;" />').text(v.vent_value4))  
                 );
             });
             replot();
@@ -460,12 +407,6 @@ function socketInit(socket,obj){
      socket.on('roomto',function(obj){
          if((obj.lineid == lineid) && (obj.lineno == lineno)){
                 console.log(obj); 
-
-               
-               $('#dial1').parent('div').find('.stremWrap').find('span').eq(0).text(obj.celsius);
-               $('#dial2').parent('div').find('.stremWrap').find('span').eq(0).text(obj.humidity);
-               $('#dial3').parent('div').find('.stremWrap').find('span').eq(0).text(obj.ventilation);
-               $('#dial4').parent('div').find('.stremWrap').find('span').eq(0).text(obj.co2);
                setKnobValues(obj);
                if(realtime_flg){
                        setPlot({celsius:obj.celsius,
@@ -481,26 +422,32 @@ function socketInit(socket,obj){
                           create_graphData();
                           replot();
                }
-               $('#line1logTable > tbody').append(
+               $('#celsius_rt_LogTable > tbody').append(
                                $('<tr></tr>')
                                    .append($('<td />').text(computeDuration(obj.t_date)))
-                                   .append($('<td style="background:#EEE;" />').text(obj.celsius))
-                                   .append($('<td style="background:#EEE;" />').text(obj.top_range1+' ～ '+obj.bottom_range1))
-                                   .append($('<td style="background:#EEE;" />').text(chkOver(obj.relay1)))
-                                   .append($('<td style="background:#EEE;" />').text(obj.vent_value1))
+                                   .append($('<td />').text(obj.celsius))
+                                   .append($('<td />').text(obj.top_range1+' ～ '+obj.bottom_range1))
+                                   .append($('<td />').text(chkOver(obj.relay1)))
+                                   .append($('<td />').text(obj.vent_value1))
+                            );
+                    
+               $('#humidity_rt_LogTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
                                    .append($('<td />').text(obj.humidity))
                                    .append($('<td />').text(obj.top_range2+' ～ '+obj.bottom_range2))
                                    .append($('<td />').text(chkOver(obj.relay2)))
                                    .append($('<td />').text(obj.vent_value2))
-                                   .append($('<td style="background:#EEE;" />').text(obj.co2))
-                                   .append($('<td style="background:#EEE;" />').text(obj.top_range4+' ～ '+obj.bottom_range4))
-                                   .append($('<td style="background:#EEE;" />').text(chkOver(obj.relay4)))
-                                   .append($('<td style="background:#EEE;" />').text(obj.vent_value4))
                             );
-               changeKnobValue($('#dial1'),obj.celsius,'celsius');
-               changeKnobValue($('#dial2'),obj.humidity,'humidity');
-               
-               changeKnobValue($('#dial4'),obj.co2,'co2');
+                    
+               $('#co2_rt_LogTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
+                                   .append($('<td />').text(obj.co2))
+                                   .append($('<td />').text(obj.top_range4+' ～ '+obj.bottom_range4))
+                                   .append($('<td />').text(chkOver(obj.relay4)))
+                                   .append($('<td />').text(obj.vent_value4))
+                            );
           }
           changeAllLineValues(obj);
      });
@@ -508,18 +455,6 @@ function socketInit(socket,obj){
      socket.on('changeSchedule',function(obj){
             console.log('socket changeSchedule');
             console.log(obj);
-            $('#dial1').trigger('configure',{
-                "max":obj.top_range1,
-                "min":obj.bottom_range1
-            }); 
-            $('#dial2').trigger('configure',{
-                "max":obj.top_range2,
-                "min":obj.bottom_range2
-            }); 
-            $('#dial4').trigger('configure',{
-                "max":obj.top_range4,
-                "min":obj.bottom_range4
-            }); 
      });
      
      socket.on('disconnect',function(){
@@ -574,27 +509,6 @@ function changeAllLineValues(obj) {
 };
 
 function setKnobValues(rep){
-    $('#dial1').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range1+' ～ '+rep.bottom_range1);
-    $('#dial2').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range2+' ～ '+rep.bottom_range2);
-    $('#dial3').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range3+' ～ '+rep.bottom_range3);
-    $('#dial4').parent('div').find('.stremWrap').find('span').eq(1).text(rep.top_range4+' ～ '+rep.bottom_range4);
-    $('#dial1').trigger('configure',{
-         "max":rep.top_range1,
-         "min":rep.bottom_range1
-    }); 
-    $('#dial2').trigger('configure',{
-          "max":rep.top_range2,
-          "min":rep.bottom_range2
-     });
-     $('#dial3').trigger('configure',{
-         "max":rep.top_range3,
-         "min":rep.bottom_range3
-    }); 
-    $('#dial4').trigger('configure',{
-         "max":rep.top_range4,
-         "min":rep.bottom_range4
-    }); 
-    
     var doc1 = $('#dial1table > tbody > tr > td');
     doc1.eq(0).text(rep.celsius);
     doc1.eq(1).text(rep.top_range1);
@@ -628,25 +542,6 @@ function setKnobValues(rep){
     sTargets.setco2_top.dashedHorizontalLine.y = rep.top_range4;
     sTargets.setco2_bottom.dashedHorizontalLine.y = rep.bottom_range4;    
 };
-
-//knob中心部にlabelをセット
-function setknobLabel(knobno){
-    $('#dial'+knobno).parent('div')
-            .append('<div class="labelWrap"></div>').find('.labelWrap')
-            .append('<span>現在値</span><span><br></span><span>上限 ～ 下限</span>');
-    var doc = $('#dial'+knobno).parent('div')
-            .append('<div class="stremWrap"></div>').find('.stremWrap')
-            .append('<span>***</span><br><span>***</span>');
-    if (knobno === 1){
-        doc.append('<span class="glyphicon glyphicon-fire"></span>');
-    } else if(knobno === 2){
-        doc.append('<span class="glyphicon glyphicon-tint"></span>');
-    } else if(knobno === 3){
-        doc.append('<span class="glyphicon glyphicon-adjust"></span>');
-    } else {
-        doc.append('<span class="glyphicon glyphicon-cloud"></span>');
-    }
-}
 
 //非同期通信でサーバからデータを受信する
 function ajaxLoading(url,type,dataType,data){
@@ -759,20 +654,25 @@ function setGraphData(){
             gfd2['co2dw'] = [];        
     }
     var rep = ajaxLoading('http://www.vita-factory.com/api/getchart','post','json',setData);
-    
-    rep.forEach(function(v){
-        setPlot({
-            celsius:v.celsius,
-            humidity:v.humidity,
-            ventilation:v.ventilation,
-            co2:v.co2,
-            t_date:v.t_date,
-            relay1:v.relay1,
-            relay2:v.relay2,
-            relay3:v.relay3,
-            relay4:v.relay4
-        });
-    });
+    if(rep){
+            $('#celsius_rt_LogTable > tbody').empty();
+            $('#humidity_rt_LogTable > tbody').empty();    
+            $('#co2_rt_LogTable > tbody').empty();
+            rep.forEach(function(v){
+                setPlot({
+                    celsius:v.celsius,
+                    humidity:v.humidity,
+                    ventilation:v.ventilation,
+                    co2:v.co2,
+                    t_date:v.t_date,
+                    relay1:v.relay1,
+                    relay2:v.relay2,
+                    relay3:v.relay3,
+                    relay4:v.relay4
+                });
+                set_realtime_log(v);
+            });
+            }
     create_graphData();
 };
 
@@ -908,6 +808,36 @@ function shit_gfd(){
                     gfd2['ventData'].shift();
                     gfd2['co2Data'].shift();                    
   }              
+}
+
+function set_realtime_log(obj){
+                $('#celsius_rt_LogTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
+                                   .append($('<td />').text(obj.celsius))
+                                   .append($('<td />').text(obj.top_range1+' ～ '+obj.bottom_range1))
+                                   .append($('<td />').text(chkOver(obj.relay1)))
+                                   .append($('<td />').text(obj.vent_value1))
+                            );
+ 
+               $('#humidity_rt_LogTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
+                                   .append($('<td />').text(obj.humidity))
+                                   .append($('<td />').text(obj.top_range2+' ～ '+obj.bottom_range2))
+                                   .append($('<td />').text(chkOver(obj.relay2)))
+                                   .append($('<td />').text(obj.vent_value2))
+                            );
+                    
+                    
+               $('#co2_rt_LogTable > tbody').append(
+                               $('<tr></tr>')
+                                   .append($('<td />').text(computeDuration(obj.t_date)))
+                                   .append($('<td />').text(obj.co2))
+                                   .append($('<td />').text(obj.top_range4+' ～ '+obj.bottom_range4))
+                                   .append($('<td />').text(chkOver(obj.relay4)))
+                                   .append($('<td />').text(obj.vent_value4))
+                            );
 }
 
 function addCheckboxText(){

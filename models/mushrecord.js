@@ -78,7 +78,7 @@ mushrecord.updateUsers = function(params){
 };
 
 mushrecord.readDevice = function(callback){
-    var sql = 'select lineid,lineno from observationDevice;';
+    var sql = 'select lineid,lineno,auto_control,online from observationDevice;';
     db.query(sql,[],function(err,results){
             db.end();
             if(err){
@@ -131,9 +131,9 @@ mushrecord.setTimeSchedule = function(params,callback){
     var tblname = 'timeSchedule' + params.relaySelect;
     if(params.relaySelect !== '0'){
             sql = 'INSERT INTO ' + tblname + '('
-            + 'lineid,lineno,start_date,end_date,top_range,bottom_range,top_range_over,bottom_range_over '
+            + 'lineid,lineno,start_date,end_date,top_range,bottom_range,top_range_over,bottom_range_over,vent_value,vent_flg '
             + ') VALUES ('
-            + '?,?,?,?,?,?,?,?'
+            + '?,?,?,?,?,?,?,?,?,?'
             + ');';
             db.query(sql,[
                 params.lineid,
@@ -144,7 +144,8 @@ mushrecord.setTimeSchedule = function(params,callback){
                 params.bottom_range,
                 params.top_range_over,
                 params.bottom_range_over,
-                
+                params.vent_value,
+                params.vent_flg
             ],function(err,res){
                     db.end();
                     if(err){
@@ -195,12 +196,19 @@ mushrecord.deleteTimeSchedule = function(params,callback){
 mushrecord.updateTimeSchedule = function(params,callback){
     var tblname = 'timeSchedule' + params.relaySelect;
     if(params.relaySelect !== '0'){
-            var sql = "update "+tblname+" set top_range=?,bottom_range=?,top_range_over=?,bottom_range_over=? where lineid=? and lineno = ? and start_date = ? and end_date = ?;";
+            var sql = "update "+tblname+" set top_range=?,\n\
+                                                            bottom_range=?,\n\
+                                                            top_range_over=?,\n\
+                                                            bottom_range_over=?,\n\
+                                                            vent_value=?,\n\
+                                                            vent_flg=? where lineid=? and lineno = ? and start_date = ? and end_date = ?;";
             db.query(sql,[
                 params.top_range,
                 params.bottom_range,
                 params.top_range_over,
                 params.bottom_range_over,
+                params.vent_value,
+                params.vent_flg,
                 params.lineid,
                 params.lineno,
                 params.start_date,

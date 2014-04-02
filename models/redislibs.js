@@ -1,4 +1,5 @@
 var config = require('../config');
+var redis = require('redis');
 var client = require('redis').createClient(config.redisPort,config.redisHost);
 var async = require('async');
 var maxlen = 100;
@@ -75,14 +76,45 @@ exports.getPubData = function(params,cb){
     });
 };
 
-exports.getSettingData = function(key,callback){
-    client.hgetall(key,function(err,repliy){
+exports.getSettingData = function(lineid,lineno,key,callback){
+    var hashkey = key+lineid+':'+lineno;
+    client.hgetall(hashkey,function(err,repliy){
             if(err){
                 console.log(err);
                 callback(new Error('redislibs: gethash error.'));
                 return;
             }
-            callback(err,repliy);
+            if(!repliy){
+                var emp = {
+                           top_range:0,
+                           bottom_range:0,
+                           top_range_over:0,
+                           bottom_range_over:0,
+                           start_date:0,
+                           end_date:0,
+                           vent_value:0,
+                           vent_flg:0                    
+                };
+                var json1 = {
+                   relay1:JSON.stringify(emp),
+                    relay2:JSON.stringify(emp),
+                    relay3:JSON.stringify(emp),
+                    relay4:JSON.stringify(emp)
+                };
+                client.hmset(hashkey,
+                        'relay1',JSON.stringify(emp),
+                        'relay2',JSON.stringify(emp),
+                        'relay3',JSON.stringify(emp),
+                        'relay4',JSON.stringify(emp),
+                        function(err,rep){
+                            if(err){
+                                console.log(err);
+                            }
+                        });
+                callback(err,json1);
+            } else {
+               callback(err,repliy);
+            }
     });
 };
 
@@ -117,7 +149,6 @@ exports.trimHash = function(params){
                             }
                             cb(null,'');
                     },function(cb){
-                        console.log('hdelLine.');
                         if(!flg){
                             client.hdel(hkey,wk);
                         }
@@ -125,7 +156,7 @@ exports.trimHash = function(params){
                     }
                 ],function(err,res){});
             } 
-            
+            console.log('trimHash end.');
         });        
     });    
 };

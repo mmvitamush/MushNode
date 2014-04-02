@@ -12,6 +12,7 @@ var config = require('./config');
 var async = require('async');
 var SessionStore = require('connect-redis')(express);
 var realtimesockets = require('./sockets/realtime');
+var redislibs = require('./models/redislibs');
 
 var app = express();
 
@@ -66,6 +67,7 @@ sub1.on('message',function(channel,message){
                 };
      //io.of('/line').in('1').emit('roomto',{celsius:obj.celsius,humidity:obj.humidity,t_date:obj.t_date});
      io.of('/summary').emit('roomto',obj);
+     redislibs.trimHash({lineid:obj.lineid,lineno:obj.lineno});
 });
 
 sub2.subscribe('changeSchedule');
@@ -147,6 +149,7 @@ app.get('/record/:lineId',routes.record);
 app.get('/line/:lineId',routes.line);
 app.get('/summary',routes.summary);
 app.get('/sample/:lineid/:lineno',routes.sample);
+app.get('/observer',routes.observer);
 app.get('/schedule/:lineid/:lineno',routes.schedule);
 app.post('/api/getRecordData',routes.getRecordData);
 app.post(﻿'/api/getchart',routes.getChart);
@@ -166,13 +169,3 @@ app.post('/mail/send',routes.sendmail);
 server.listen(app.get('port'),function(){
     console.log("Node.js Server Listening on Port "+app.get('port'));
 });
-
-//socket.ioのコネクション設定
-//イベントハンドラーには引数としてクライアントとの通信を行うためのsocketオブジェクトが与えられる
-//io.sockets.on('connection',realtimesockets.onConnection);
-
-
-
-//http.createServer(app).listen(app.get('port'), function(){
-//  console.log('Express server listening on port ' + app.get('port'));
-//});
